@@ -1,36 +1,38 @@
-name: CI/CD Lightsail
+name: Deploy to Lightsail
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4           # Récupérer le code :contentReference[oaicite:8]{index=8}
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+    - name: Set up SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Install dependencies
-        run: npm ci                         # Installer les packages
+    - name: Install dependencies
+      run: |
+        npm install
 
-      - name: Build
-        run: npm run build                 # Générer le build React
+    - name: Build project
+      run: |
+        npm run build
 
-      - name: Deploy to Lightsail
-        uses: appleboy/ssh-action@v0.1.7    # Exécuter des commandes SSH :contentReference[oaicite:9]{index=9}
-        with:
-          host: ${{ secrets.LIGHTSAIL_HOST }}
-          username: ${{ secrets.REMOTE_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            rm -rf /var/www/hellosoins/*
-            mkdir -p /var/www/hellosoins
-            rsync -avz --delete ./build/ ubuntu@${{ secrets.LIGHTSAIL_HOST }}:/var/www/hellosoins
-            sudo systemctl reload nginx     # Recharger Nginx pour prendre en compte la nouvelle version
+    - name: Deploy to Lightsail
+      run: |
+        ssh -o StrictHostKeyChecking=no ubuntu@15.188.208.133 << 'EOF'
+        cd /path/to/your/frontend
+        git pull origin main
+        npm install
+        npm run build
+        sudo cp -r build/* /var/www/html/
+        sudo systemctl restart nginx
+        EOF
