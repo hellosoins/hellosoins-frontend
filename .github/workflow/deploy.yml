@@ -1,0 +1,36 @@
+name: CI/CD Lightsail
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4           # Récupérer le code :contentReference[oaicite:8]{index=8}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci                         # Installer les packages
+
+      - name: Build
+        run: npm run build                 # Générer le build React
+
+      - name: Deploy to Lightsail
+        uses: appleboy/ssh-action@v0.1.7    # Exécuter des commandes SSH :contentReference[oaicite:9]{index=9}
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            rm -rf /var/www/hellosoins/*
+            mkdir -p /var/www/hellosoins
+            rsync -avz --delete ./build/ ubuntu@${{ secrets.LIGHTSAIL_HOST }}:/var/www/hellosoins
+            sudo systemctl reload nginx     # Recharger Nginx pour prendre en compte la nouvelle version
