@@ -1,76 +1,72 @@
-// App.js de React
-import React, { useState } from "react";
-import "./App.css";
+import './App.css';
+import { Route, Routes, useLocation } from 'react-router-dom';
+import { SidebarProvider,SidebarInset, } from "@/components/ui/Sidebar"
 
-function App() {
-  const [table, setTable] = useState("");
-  const [number, setNumber] = useState("");  // Nouveau state pour gérer le numéro envoyé
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);  // Gérer les erreurs
+import AppSidebar from "./components/common/app-sidebar"
+import AppHeader from './components/common/app-header';
+import HistoriqueRdvCard from './components/rdv/HistoriqueRdvCard';
+import LoginPage from '@/pages/login/login-page';
+import SignInPage from './pages/login/signin-page';
+import AccueilPraticien from './pages/praticien/AccueilPraticien';
+import Pratiques from './pages/praticien/Pratiques';
+import Agenda from './pages/disponibilite/agenda/agenda';
+import ProfilPatient from './pages/patients/ProfilPatient';
+import DashboardPatient from './pages/patients/DashboardPatient';
+import PraticienProfil from './pages/praticien/PraticienProfil';
+import Disponibilités from './pages/disponibilite/disponibilite';
+import Crenaux from './pages/crenaux/crenaux';
+import Accueil from './pages/accueil/Accueil';
+import PatientsPraticien from './pages/praticien/PatientsPraticien';
+import CompleteProfile from './pages/praticien/ProfileComponents/CompleteProfile';
+import EditFormation from './pages/praticien/ProfileComponents/EditFormation';
+import TroubleConfig from './pages/praticien/ProfileComponents/TroubleConfig';
+import PremierPas from './pages/praticien/PremierPas';
+import AccountCreationContainer from './components/common/AccountCreationContainer';
+function App() {  
+  const location = useLocation(); // route actuelle
 
-  const handleSubmit = (event) => {
-    event.preventDefault(); // Empêche le rechargement de la page
-    setLoading(true); // Commencer le chargement
-  
-    // Envoyer le numéro au backend
-    fetch(`http://localhost:5000/table/${number}`)
-      .then((response) => {
-        console.log("Réponse brute :", response); // Ajouter ce log pour voir la réponse brute
-        return response.json();  // Tenter de parser en JSON
-      })
-      .then((data) => {
-        if (data.table) {
-          setTable(data.table); // Afficher la table retournée
-        } else {
-          setError("Table non trouvée.");
-        }
-        setLoading(false); // Arrêter le chargement
-      })
-      .catch((error) => {
-        console.error("Erreur lors de la récupération de la table:", error);
-        setError("Une erreur est survenue.");
-        setLoading(false); // Arrêter le chargement
-      });
-  };
-  
+  const isLoginPage = location.pathname === '/' || location.pathname === '/login' || location.pathname === '/signin';
+
 
   return (
-    <div className="App">
-      <div className="construction-container">
-        <h1>hellosoins.com</h1>
-        <h2>Site en construction</h2>
-        <p>Nous travaillons activement à la mise en ligne de notre site.</p>
-        <p>Restez connectés !</p>
-      </div>
-      <h1>Afficher une Table en Fonction du Numéro</h1>
+    <SidebarProvider>
+      {/* className="bg-[#F9FAFB]" */}
+      {!isLoginPage && <AppSidebar />}
+      <SidebarInset  >
+        {!isLoginPage && <AppHeader />}
+        <div>
+          <Routes>
+            {/* Pages d'inscription et de connexion */}
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signin" element={<AccountCreationContainer />} />
+            {/* Les pages de navigations */}
 
-      {/* Formulaire pour envoyer le numéro */}
-      <form onSubmit={handleSubmit}>
-        <label>
-          numero :
-          <input
-            type="number"
-            value={number}
-            onChange={(e) => setNumber(e.target.value)}
-            min="1"
-            required
-          />
-        </label>
-        <button type="submit">Afficher la Table</button>
-      </form>
+            {/* Accueil principale de l'application */}
+            <Route path="/" element={<LoginPage />} />
 
-      {/* Affichage de la table ou du message d'erreur */}
-      {loading ? (
-        <p>Chargement...</p>
-      ) : error ? (
-        <p style={{ color: "red" }}>{error}</p>
-      ) : table ? (
-        <p>La table : <strong>{table}</strong></p>
-      ) : (
-        <p>Aucune table sélectionnée.</p>
-      )}
-    </div>
-  );
+
+            {/* PRATICIEN */}
+            <Route path="/praticien/dashboard" element={<AccueilPraticien />} />
+            <Route path="/praticien/premierPas" element={<PremierPas/>} />
+            <Route path="/agenda" element={<Agenda />} />
+            <Route path="/pratiques" element={<Pratiques />} />
+            <Route path="/profil" element={<PraticienProfil />} />
+            <Route path="/plage-horaire" element={<Disponibilités />} />
+            <Route path="/type-rendez-vous" element={<Crenaux />} />
+            <Route path="/praticien/patients" element={<PatientsPraticien />} />
+            <Route path="/completeProfile" element={<CompleteProfile/>}/>
+            <Route path="/editFormation" element={<EditFormation/>}/>
+            <Route path="/troubleConfig" element={<TroubleConfig/>}/>
+
+            {/* PATIENTS */}
+            <Route path="/about" element={<ProfilPatient />} />
+            <Route path="/historique/rdv" element={<DashboardPatient />} />
+            <Route path="/historique/rdv/:id" element={<HistoriqueRdvCard />} />
+          </Routes>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
+  )
 }
 
-export default App;
+export default App
