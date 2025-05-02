@@ -1,13 +1,19 @@
-/** @format */
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import path from "path"
 
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-
+// https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  preview: {
-    host: true, // ou spécifie directement l'IP si besoin
-    port: 4173, // ou autre port si modifié
-    allowedHosts: ["preprod.hellosoins.com", "hellosoin.com"],
+  plugins: [react(),],
+  server: {
+    host: true,
+    allowedHosts: ['6da2-129-222-108-22.ngrok-free.app']
   },
-});
+  host: '0.0.0.0',
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  base: "/medicalReact",
+})
