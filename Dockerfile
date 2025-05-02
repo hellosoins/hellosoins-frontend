@@ -1,7 +1,17 @@
-FROM node:20
+FROM node:18
+
 WORKDIR /app
+
 COPY package*.json ./
+
 RUN npm install
+
 COPY . .
-EXPOSE 3000
-CMD ["npm", "start"]
+
+RUN npm run build
+
+# Serve build avec nginx
+FROM nginx:alpine
+COPY --from=0 /app/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

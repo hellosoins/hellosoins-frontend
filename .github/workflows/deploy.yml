@@ -1,0 +1,28 @@
+name: Deploy Frontend Preprod
+
+on:
+  push:
+    branches:
+      - preprod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+    - name: Deploy to Lightsail
+      run: |
+        ssh -o StrictHostKeyChecking=no ubuntu@15.188.208.133 << 'EOF'
+        cd ~/apps/hellosoins/frontend/preprod
+        git pull origin preprod
+        docker compose down
+        docker compose up -d --build
+        EOF
