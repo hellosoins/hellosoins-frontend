@@ -19,19 +19,29 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Set environment file
-        run: |
-          if [[ "${{ github.ref }}" == "refs/heads/preprod" ]]; then
-            cp .env.preprod .env
-          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            cp .env.prod .env
-          fi
-
       - name: Deploy
         run: |
+          BRANCH_NAME=${{ github.ref_name }}
+
+          if [[ "$BRANCH_NAME" == "main" ]]; then
+            API_URL="https://api.hellosoins.com"
+          else
+            API_URL="https://api.preprod.hellosoins.com"
+          fi
+
           ssh -o StrictHostKeyChecking=no ubuntu@15.188.208.133 << EOF
-          cd ~/apps/hellosoins/frontend/${{ github.ref_name }}
-          git pull origin ${{ github.ref_name }}
-          docker-compose down
-          docker-compose up -d --build
+            set -e
+
+            echo "→ Aller dans le dossier frontend"
+            cd ~/apps/hellosoins/frontend/${BRANCH_NAME}
+
+            echo "→ Pull du code"
+            git pull origin ${BRANCH_NAME}
+
+            echo "→ Création du fichier .env"
+            echo "VITE_API_URL=${API_URL}" > .env
+
+            echo "→ Reconstruction des conteneurs Docker"
+            docker-compose down
+            docker-compose up -d --build
           EOF
