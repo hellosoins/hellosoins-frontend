@@ -19,6 +19,14 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Set environment file
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/preprod" ]]; then
+            cp .env.preprod .env
+          elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            cp .env.prod .env
+          fi
+
       - name: Deploy
         run: |
           ssh -o StrictHostKeyChecking=no ubuntu@15.188.208.133 << EOF
