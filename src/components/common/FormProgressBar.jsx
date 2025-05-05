@@ -1,5 +1,5 @@
-import { Progress } from "@/components/ui/progress";
-
+import { Progress } from "@/components/ui/Progress";
+//here is a Progress bar form
 const FormProgressBar = ({ progress }) => {
   return (
     <div className="flex items-center justify-center gap-2">
