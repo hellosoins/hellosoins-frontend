@@ -1,7 +1,7 @@
 // TableList.jsx
 import React, { useState } from 'react';
 import { Edit, Trash, PlusCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { useQuery } from '@tanstack/react-query';
 import { getAllPraticienApproches } from '@/services/trouble-solutions-services';
 import { TailSpin } from 'react-loader-spinner';
