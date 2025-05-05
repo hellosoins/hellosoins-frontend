@@ -375,7 +375,7 @@ const Accueil = () => {
             onReset={onReset}
           />
         )}
-        <MedicalGrid />
+        {/* <MedicalGrid />  */}
         <ContactSection />
       </main>
       <Footer />
