@@ -42,7 +42,7 @@ function App() {
             {/* Les pages de navigations */}
 
             {/* Accueil principale de l'application */}
-            <Route path="/" element={<Accueil />} />
+            <Route path="/" element={<LoginPage />} />
 
 
             {/* PRATICIEN */}
@@ -66,7 +66,6 @@ function App() {
         </div>
       </SidebarInset>
     </SidebarProvider>
-    //test
   )
 }
 
