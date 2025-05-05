@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Avatar } from '@/components/ui/Avatar';
-import { Separator } from '@/components/ui/separator';
+import { Separator } from '@/components/ui/Separator';
 import { PenSquare, ArrowRightCircle, Save, Trash, PlusCircle } from 'lucide-react';
 
 const practicesData = [
