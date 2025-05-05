@@ -42,7 +42,7 @@ function App() {
             {/* Les pages de navigations */}
 
             {/* Accueil principale de l'application */}
-            <Route path="/" element={<LoginPage />} />
+            <Route path="/" element={<Accueil />} />
 
 
             {/* PRATICIEN */}
