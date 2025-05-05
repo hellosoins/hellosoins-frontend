@@ -38,10 +38,11 @@ const TABS = [
   { id: "formations", label: "Formations et expériences" },
   { id: "troubles", label: "Troubles et solutions" },
   { id: "cabinets", label: "Cabinets" },
-  { id: "avis", label: "Avis patients" },
+  { id: "avis", label: "Avis patient" },
 ];
 import { TailSpin } from 'react-loader-spinner';
 import { API_URL } from "@/services/api";
+import GestionDesTarif from "./ProfileComponents/GestionDesTarif";
 
 const tabIcons = {
   informations: <User className="w-6 h-6" />,
