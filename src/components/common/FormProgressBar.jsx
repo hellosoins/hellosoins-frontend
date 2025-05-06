@@ -1,4 +1,4 @@
-import { Progress } from "@/components/ui/Progress";
+import { Progress } from "@/components/ui/Progresss";
 //here is a Progress bar form
 const FormProgressBar = ({ progress }) => {
   return (
