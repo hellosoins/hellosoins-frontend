@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/Avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
 import {
   Camera,
   CheckCircle,
@@ -33,14 +29,15 @@ import { Button } from "@/components/ui/Button";
 import Cabinets from "./ProfileComponents/Cabinets";
 import axios from "axios";
 import { Link } from "react-router-dom";
+
 const TABS = [
   { id: "informations", label: "Informations" },
   { id: "formations", label: "Formations et expériences" },
-  { id: "troubles", label: "Troubles et solutions" },
+  { id: "troubles", label: "Mes Thérapies" },
   { id: "cabinets", label: "Cabinets" },
-  { id: "avis", label: "Type de rendez-vous" },
+  { id: "avis", label: "Mes type de rendez-vous" },
 ];
-import { TailSpin } from 'react-loader-spinner';
+import { TailSpin } from "react-loader-spinner";
 import { API_URL } from "@/services/api";
 import GestionDesTarif from "./ProfileComponents/GestionDesTarif";
 
@@ -81,8 +78,8 @@ const PraticienProfil = () => {
 
         if (response.data.success) {
           setPractitionerData(response.data.data);
-          setImgFile(response.data.data.profil_photo)
-          console.log(imgFile)
+          setImgFile(response.data.data.profil_photo);
+          console.log(imgFile);
         }
       } catch (error) {
         console.error("Erreur de récupération des données:", error);
@@ -96,11 +93,11 @@ const PraticienProfil = () => {
     fetchPractitionerData();
   }, [navigate]);
 
-
   // Configuration du viewport pour éviter le zoom manuel
   useEffect(() => {
     const viewport = document.querySelector("meta[name=viewport]");
-    const contentValue = "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no";
+    const contentValue =
+      "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no";
     if (viewport) {
       viewport.setAttribute("content", contentValue);
     } else {
@@ -142,14 +139,18 @@ const PraticienProfil = () => {
   };
 
   if (!practitionerData) {
-    return <div className="p-4 text-center w-full flex items-center justify-center h-full"><TailSpin
-    height="40"
-    width="40"
-    color="#4fa94d"
-    ariaLabel="tail-spin-loading"
-    radius="1"
-    visible={true}
-  /></div>;
+    return (
+      <div className="p-4 text-center w-full flex items-center justify-center h-full">
+        <TailSpin
+          height="40"
+          width="40"
+          color="#4fa94d"
+          ariaLabel="tail-spin-loading"
+          radius="1"
+          visible={true}
+        />
+      </div>
+    );
   }
 
   return (
@@ -159,7 +160,7 @@ const PraticienProfil = () => {
         <div className="flex flex-col md:flex-row items-start space-y-4 md:space-y-0 md:space-x-4">
           {/* Avatar + changement de photo */}
           <div className="relative">
-          <Avatar className="w-24 h-24 overflow-hidden ring-4 ring-gray-300">
+            <Avatar className="w-24 h-24 overflow-hidden ring-4 ring-gray-300">
               <AvatarImage
                 src={`${API_URL}/image${practitionerData.profil_photo}` || ""}
                 alt="Photo de profil"
@@ -200,16 +201,20 @@ const PraticienProfil = () => {
                 </div>
               )}
             </div>
-            
+
             <div className="flex items-center mt-1 space-x-2 text-xs text-gray-800">
               <Mail className="w-4 h-4" color="white" fill="currentColor" />
               <span>{practitionerData.mail}</span>
             </div>
-            
+
             <div className="flex items-center mt-1 space-x-2 text-xs text-gray-800">
               <MapPin className="w-4 h-4" color="white" fill="currentColor" />
               <span>
-                {[practitionerData.adress, practitionerData.postal_code, practitionerData.city]
+                {[
+                  practitionerData.adress,
+                  practitionerData.postal_code,
+                  practitionerData.city,
+                ]
                   .filter(Boolean)
                   .join(", ")}
               </span>
@@ -238,12 +243,12 @@ const PraticienProfil = () => {
             </div>
             {/* Bouton Modifier affiché uniquement sur mobile/tablette */}
             <div className="mt-4 md:hidden">
-            <Link to="/completeProfile" state={{ imgFile }}>
-      <Button className="inline-flex items-center px-4 py-2 text-xs font-medium text-white bg-[#0f2b3d] rounded-sm hover:bg-[#14384f]">
-        <SquarePen className="w-4 h-4 mr-2" />
-        Modifier le profil
-      </Button>
-    </Link>
+              <Link to="/completeProfile" state={{ imgFile }}>
+                <Button className="inline-flex items-center px-4 py-2 text-xs font-medium text-white bg-[#0f2b3d] rounded-sm hover:bg-[#14384f]">
+                  <SquarePen className="w-4 h-4 mr-2" />
+                  Modifier le profil
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -253,9 +258,9 @@ const PraticienProfil = () => {
           {/* Icônes réseaux sociaux */}
           <div className="flex mb-2 space-x-2">
             {practitionerData.practitioner_info.linkedin_link && (
-              <a 
-                // href={practitionerData.practitioner_info.linkedin_link} 
-                target="_blank" 
+              <a
+                // href={practitionerData.practitioner_info.linkedin_link}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
               >
@@ -263,9 +268,9 @@ const PraticienProfil = () => {
               </a>
             )}
             {practitionerData.practitioner_info.facebook_link && (
-              <a 
-                // href={practitionerData.practitioner_info.facebook_link} 
-                target="_blank" 
+              <a
+                // href={practitionerData.practitioner_info.facebook_link}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 bg-gray-100 rounded-full hover:bg-gray-200"
               >
@@ -306,11 +311,21 @@ const PraticienProfil = () => {
 
       {/* Contenu conditionnel selon l'onglet actif */}
       <div className="mx-5 mt-4 mb-20 md:mb-4">
-        {activeTab === "informations" && <Information practitionerData={practitionerData}/>}
-        {activeTab === "formations" && <Formation practitionerData={practitionerData}/>}
-        {activeTab === "troubles" && <TroubleManager practitionerData={practitionerData}/>}
-        {activeTab === "cabinets" && <Cabinets practitionerData={practitionerData}/>}
-        {activeTab === "avis" && <GestionDesTarif practitionerData={practitionerData}/>}
+        {activeTab === "informations" && (
+          <Information practitionerData={practitionerData} />
+        )}
+        {activeTab === "formations" && (
+          <Formation practitionerData={practitionerData} />
+        )}
+        {activeTab === "troubles" && (
+          <TroubleManager practitionerData={practitionerData} />
+        )}
+        {activeTab === "cabinets" && (
+          <Cabinets practitionerData={practitionerData} />
+        )}
+        {activeTab === "avis" && (
+          <GestionDesTarif practitionerData={practitionerData} />
+        )}
       </div>
 
       {/* Barre d'onglets flottante pour mobile, placée en bas */}
