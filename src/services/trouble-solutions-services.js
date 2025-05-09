@@ -18,11 +18,11 @@ export const saveTroubleApproche = async (requestData) => {
     
     try {
         const response = await api.post('/praticien/add-approaches', requestData);
-        console.log('Approches sauvegardée:', response.data);
+        console.log('Thérapies sauvegardée:', response.data);
         return response.data;
     } catch (error) {
         console.error(
-            'Erreur lors de la sauvegarde des approches:',
+            'Erreur lors de la sauvegarde du thérapie:',
             error.response ? error.response.data : error.message
         );
         throw error;
@@ -41,11 +41,11 @@ export const deleteTroubleApproche = async (requestData) => {
     
     try {
         const response = await api.post('/praticien/delete-approaches', requestData);
-        console.log('Approches supprimees:', response.data);
+        console.log('Thérapie supprimées:', response.data);
         return response.data;
     } catch (error) {
         console.error(
-            'Erreur lors de la suppression des approches:',
+            'Erreur lors de la suppression du thérapie:',
             error.response ? error.response.data : error.message
         );
     }
@@ -76,11 +76,11 @@ export const updateTroubleApproche = async (troubleData) => {
         if(!troubleData){ throw new Error("Aucune approche n'a été mise à jour"); }
         
         const response = await api.post('/praticien/update-approaches', troubleData);
-        console.log('Approches mis à jour:', response.data);
+        console.log('Thérapie mis à jour:', response.data);
         return response.data;
     } catch (error) {
         console.error(
-            'Erreur lors de la mise a jour des approches:',
+            'Erreur lors de la mise a jour du thérapie:',
             error.response ? error.response.data : error.message
         );
         throw error;

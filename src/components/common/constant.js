@@ -18,7 +18,7 @@ const menu_principale = [
   },
   {
     title: "Agenda",
-    // url: "/agenda",
+    url: "/agenda",
     icon: CalendarDays,
   },
   // {

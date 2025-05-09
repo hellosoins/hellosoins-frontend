@@ -1,7 +1,12 @@
 // TroubleManager.jsx
 import React, { useState } from 'react';
+<<<<<<< HEAD
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/button";
+=======
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/Dialog";
+import { Button } from "@/components/ui/Button";
+>>>>>>> 5c38d4c9f952123b7db85e6f17664b879b248110
 import { Loader2 } from 'lucide-react';
 import TableList from './TroubleEtSolution';
 import TroubleConfig from './TroubleConfig';
@@ -10,7 +15,6 @@ import { deleteTroubleApproche } from '@/services/trouble-solutions-services';
 // Ajoutez l'import de HeroUI Toast
 import { addToast } from "@heroui/react";
 import { TailSpin } from 'react-loader-spinner';
-import { DialogDescription } from '@radix-ui/react-dialog';
 
 const TroubleManager = () => {
   const queryClient = useQueryClient();
@@ -40,7 +44,7 @@ const TroubleManager = () => {
         console.log("Approches supprimes avec succès :", data);
         queryClient.invalidateQueries(['praticien-approches']);
         addToast({
-          title: 'Suppression réussie de l’approche.',
+          title: 'Suppression réussie de la thérapie.',
           color: 'warning',
           duration: 3000
         });
@@ -99,7 +103,7 @@ const TroubleManager = () => {
           <DialogHeader>
             <DialogTitle>Confirmer la suppression</DialogTitle>
             <DialogDescription className="text-xs">
-              Êtes-vous sûr de vouloir supprimer cette approche ?
+              Êtes-vous sûr de vouloir supprimer cette thérapie ?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

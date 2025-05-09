@@ -13,6 +13,7 @@ export default defineConfig({
       "6da2-129-222-108-22.ngrok-free.app",
       "hellosoins.com",
       "preprod.hellosoins.com",
+      "http://192.168.1.171:5000",
     ],
   },
   host: "0.0.0.0",

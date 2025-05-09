@@ -118,7 +118,7 @@ const TroubleConfig = (props) => {
         console.log("Approches ajoutées avec succès :", data);
         queryClient.invalidateQueries(['praticien-approches']);
         addToast({
-          title: 'Ajout réussie de l’approche.',
+          title: 'Ajout réussie de la thérapie.',
           color: 'success',
           duration: 3000
         });
@@ -147,7 +147,7 @@ const TroubleConfig = (props) => {
         console.log("Approches ajoutées avec succès :", data);
         queryClient.invalidateQueries(['praticien-approches']);
         addToast({
-          title: 'Mise a jour réussie de l’approche.',
+          title: 'Mise a jour réussie de la thérapie.',
           color: 'success',
           duration: 3000
         });
@@ -190,11 +190,11 @@ const TroubleConfig = (props) => {
         <span className="text-[#5DA781] text-sm">
   {isUpdate ? (
     <>
-      Mettre à jour vos approches{' '}
+      Mettre à jour vos Thérapies{' '}
       <span className='text-gray-700 font-normal text-xs'></span>
     </>
   ) : (
-    'Ajouter vos approches'
+    'Ajouter vos Thérapies'
   )}
 </span>
 

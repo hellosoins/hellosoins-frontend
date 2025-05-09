@@ -1,14 +1,44 @@
 import React, { useState, useEffect } from 'react'
 import { InfoIcon, MapPinHouse, Star, CreditCard } from 'lucide-react'
-import { API_URL } from '@/services/api'
+import { useQuery } from '@tanstack/react-query';
+import { 
+  getPraticienSpecialites,
+  getPaymentMethods,
+  getPatientTypes
+} from '@/services/profile-service';
 
 const Information = ({ practitionerData }) => {
   // États pour les données fetchées
-  const [patientTypes, setPatientTypes] = useState([])
-  const [paymentMethods, setPaymentMethods] = useState([])
-  const [loadingPatients, setLoadingPatients] = useState(true)
-  const [loadingPayments, setLoadingPayments] = useState(true)
   const [error, setError] = useState(null)
+
+  const { 
+    data: patientTypes = [], 
+    isLoading: isLoadingPatients, 
+    isError: isErrorPatients, 
+    error: patientsError 
+  } = useQuery({
+    queryKey: ['patient-types'],
+    queryFn: getPatientTypes,
+  });
+  
+  const { 
+    data: paymentMethods = [], 
+    isLoading: isLoadingPayments, 
+    isError: isErrorPayments, 
+    error: paymentsError 
+  } = useQuery({
+    queryKey: ['payment-methods'],
+    queryFn: getPaymentMethods,
+  });
+
+  const { 
+    data: practSpecialities = [] , 
+    isLoading: isLoadPractSpecialities, 
+    isError: isErrPractSpecialities, 
+    error: errPractSpecialities } = useQuery({
+    queryKey: ['practicien-specialities'],
+    queryFn: getPraticienSpecialites,
+  });
 
   // Images de cabinet
   const cabinetImages = [
@@ -16,46 +46,6 @@ const Information = ({ practitionerData }) => {
     "https://www.manohisoa-medical.com/wp-content/uploads/bfi_thumb/Slide-cabinet-medical-manohisoa-accueil-34ze9ftb74bqorb1ej0jy8.jpg",
     "https://media.istockphoto.com/id/1171739282/fr/photo/salle-dexamen-m%C3%A9dical.jpg?s=612x612&w=0&k=20&c=tu2X2NssRW_Xu8__973BZeSQsOiJnfR5rxvMB9qLXHQ="
   ]
-
-  useEffect(() => {
-    const token = localStorage.getItem('authToken')
-
-    // Fetch des types de patients
-    fetch(`${API_URL}/praticien/patient-types`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Erreur lors du chargement des types de patients')
-        return res.json()
-      })
-      .then(json => {
-        // On ne garde que les descriptions
-        setPatientTypes(json.data.map(pt => pt.description))
-      })
-      .catch(err => setError(err.message))
-      .finally(() => setLoadingPatients(false))
-
-    // Fetch des moyens de paiement
-    fetch(`${API_URL}/praticien/payment-methods`, {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Erreur lors du chargement des moyens de paiement')
-        return res.json()
-      })
-      .then(json => {
-        // Pareil, on ne garde que les descriptions
-        setPaymentMethods(json.data.map(pm => pm.description))
-      })
-      .catch(err => setError(err.message))
-      .finally(() => setLoadingPayments(false))
-  }, [])
 
   const formatPhoneNumber = phone => {
     if (!phone) return ''
@@ -103,19 +93,22 @@ const Information = ({ practitionerData }) => {
               Type de patient :
             </div>
             <div className="w-full md:w-2/3 overflow-hidden">
-              {loadingPatients ? (
-                <span>Chargement...</span>
-              ) : patientTypes.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {patientTypes.map((type, idx) => (
-                    <span key={idx} className="px-2 py-1 bg-gray-100 rounded">
-                      {type}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <span>Aucun type de patient défini.</span>
-              )}
+              {
+              isLoadingPatients 
+              ? (<span>Chargement...</span>) 
+              : patientTypes.length > 0 
+                ? (
+                  <div className="flex flex-wrap gap-2">
+                    {patientTypes.map((type, idx) => (
+                      <span key={idx} className="px-2 py-1 bg-gray-100 rounded">
+                        {type}
+                      </span>
+                    ))}
+                  </div>) 
+                : (isErrorPatients 
+                  ? (<span className="text-xs text-red-500">{patientsError.message}</span>) 
+                  : (<span className="text-xs text-gray-600">Aucun type de patient défini.</span>))
+              }
             </div>
           </div>
           <div className="flex flex-col md:flex-row mb-1">
@@ -176,19 +169,20 @@ const Information = ({ practitionerData }) => {
             </tr>
           </thead>
           <tbody>
-            {[
-              'Énergétique Traditionnelle Chinoise',
-              'Hypnothérapie',
-              'Reiki',
-              'Réflexologie',
-              'Tuina',
-            ].map((spec, i) => (
-              <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-100'}>
-                <td className="px-2 py-3 text-gray-700">{spec}</td>
-                <td className="px-2 py-1">45min</td>
-                <td className="px-2 py-1">80€</td>
-              </tr>
-            ))}
+            {isLoadPractSpecialities 
+            ? (<p className="text-xs text-gray-600">Chargement des spécialités...</p>)
+            : (!isErrPractSpecialities 
+                ? (practSpecialities.length > 0 
+                    ? (practSpecialities.map((spec, i) => (
+                      <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-100'}>
+                        <td className="px-2 py-3 text-gray-700">{spec.speciality.designation}</td>
+                        <td className="px-2 py-1">-</td>
+                        <td className="px-2 py-1">-</td>
+                      </tr>
+                    ))) 
+                    : (<p className="text-xs text-gray-600">Aucun spécialité défini.</p>))
+                : (<p className="text-xs text-red-500">{errPractSpecialities.message}</p>)
+            )}
           </tbody>
         </table>
       </div>
@@ -199,20 +193,22 @@ const Information = ({ practitionerData }) => {
         <h2 className="flex items-center gap-2 mb-2 text-sm font-semibold text-[#5DA781]">
           <CreditCard size={17} /> Moyens de paiement
         </h2>
-        {loadingPayments ? (
-          <p>Chargement...</p>
-        ) : paymentMethods.length > 0 ? (
-          <ul className="space-y-1 text-xs text-gray-700">
-            {paymentMethods.map((moyen, idx) => (
-              <li key={idx} className="flex items-center">
-                <span className="inline-block w-2 h-2 mr-2 bg-[#405969] rounded-full" />
-                {moyen}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-xs text-gray-600">Aucun moyen de paiement défini.</p>
-        )}
+        {
+        isLoadingPayments 
+        ? (<p>Chargement de vos modes de paiement...</p>) 
+        : paymentMethods.length > 0 
+          ? (<ul className="space-y-1 text-xs text-gray-700">
+              {paymentMethods.map((moyen, idx) => (
+                <li key={idx} className="flex items-center">
+                  <span className="inline-block w-2 h-2 mr-2 bg-[#405969] rounded-full" />
+                  {moyen}
+                </li>
+              ))}
+            </ul>) 
+          : (isErrorPayments
+            ? (<p className="text-xs text-red-500">{paymentsError.message}</p>)
+            : (<p className="text-xs text-gray-600">Aucun moyen de paiement défini.</p>))
+        }
         </div>
 
         {/* Note et avis */}
