@@ -1,6 +1,6 @@
 // TroubleConfig.jsx
 import React, { useState, useRef, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { ArrowLeftCircle, PlusCircle, Save, XCircle } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 

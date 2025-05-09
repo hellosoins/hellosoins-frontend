@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Label } from "../ui/Label";
 import logo from "../../assets/hs2.svg";

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import SlotSelector from './selector/selector';
 import PracticeScheduler from './practiseSheduler/practiseSheduler';
 import { Card, CardContent } from "@/components/ui/Card";
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { Clock, Save } from "lucide-react";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';

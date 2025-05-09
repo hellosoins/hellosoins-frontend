@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Input } from "@/components/ui/Input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/Select";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Clock, PlusCircle, Trash2 } from "lucide-react";
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale'; // Pour le format en français

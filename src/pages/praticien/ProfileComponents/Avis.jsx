@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 // Importez ici vos composants shadcn
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/Card';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/Avatar';

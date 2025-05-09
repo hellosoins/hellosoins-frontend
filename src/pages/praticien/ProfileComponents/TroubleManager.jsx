@@ -1,13 +1,13 @@
 // TroubleManager.jsx
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Loader2 } from 'lucide-react';
 import TableList from './TroubleEtSolution';
 import TroubleConfig from './TroubleConfig';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deleteTroubleApproche } from '@/services/trouble-solutions-services';
-// Ajoutez l'import de HeroUI Toast
+// Ajoutez l'import de HeroUI Toasted
 import { addToast } from "@heroui/react";
 import { TailSpin } from 'react-loader-spinner';
 

@@ -8,7 +8,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/Dialog';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { getColorByType } from '../utils/planningUtils';
 

@@ -1,19 +1,10 @@
 // TableList.jsx
-<<<<<<< HEAD
 import React, { useState } from 'react';
 import { Edit, Trash, PlusCircle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { useQuery } from '@tanstack/react-query';
 import { getAllPraticienApproches } from '@/services/trouble-solutions-services';
 import { TailSpin } from 'react-loader-spinner';
-=======
-import React, { useState } from "react";
-import { Edit, Trash, PlusCircle } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-import { useQuery } from "@tanstack/react-query";
-import { getAllPraticienApproches } from "@/services/trouble-solutions-services";
-import { TailSpin } from "react-loader-spinner";
->>>>>>> 5c38d4c9f952123b7db85e6f17664b879b248110
 
 // Fonction pour regrouper les solutions par spécialité
 const groupSolutionsBySpecialite = (solutions) => {
