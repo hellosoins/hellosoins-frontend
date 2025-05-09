@@ -1,12 +1,12 @@
 import './App.css';
 import { Route, Routes, useLocation } from 'react-router-dom';
-import { SidebarProvider,SidebarInset, } from "@/components/ui/Sidebar"
+import { SidebarProvider, SidebarInset } from '@/components/ui/Sidebar';
 
-import AppSidebar from "./components/common/app-sidebar"
+import AppSidebar from './components/common/app-sidebar';
 import AppHeader from './components/common/app-header';
 import HistoriqueRdvCard from './components/rdv/HistoriqueRdvCard';
 import LoginPage from '@/pages/login/login-page';
-import SignInPage from './pages/login/signin-page';
+import AccountCreationContainer from './components/common/AccountCreationContainer';
 import AccueilPraticien from './pages/praticien/AccueilPraticien';
 import Pratiques from './pages/praticien/Pratiques';
 import Agenda from './pages/disponibilite/agenda/agenda';
@@ -15,48 +15,57 @@ import DashboardPatient from './pages/patients/DashboardPatient';
 import PraticienProfil from './pages/praticien/PraticienProfil';
 import Disponibilités from './pages/disponibilite/disponibilite';
 import Crenaux from './pages/crenaux/crenaux';
-import Accueil from './pages/accueil/Accueil';
 import PatientsPraticien from './pages/praticien/PatientsPraticien';
 import CompleteProfile from './pages/praticien/ProfileComponents/CompleteProfile';
 import EditFormation from './pages/praticien/ProfileComponents/EditFormation';
 import TroubleConfig from './pages/praticien/ProfileComponents/TroubleConfig';
 import PremierPas from './pages/praticien/PremierPas';
-import AccountCreationContainer from './components/common/AccountCreationContainer';
-function App() {  
-  const location = useLocation(); // route actuelle
+import Agendav2 from './pages/praticien/Agenda';
 
-  const isLoginPage = location.pathname === '/' || location.pathname === '/login' || location.pathname === '/signin';
+function App() {
+  const location = useLocation();
+  const isAgendaRoute = location.pathname === '/agenda';
+  const isAuthRoute = ['/', '/login', '/signin'].includes(location.pathname);
 
+  // Si /agenda, on n'utilise ni SidebarProvider ni SidebarInset
+  if (isAgendaRoute) {
+    return (
+      <>
+        <div className="content-full-width">
+          <Routes>
+            <Route path="/agenda" element={<Agendav2 />} />
+          </Routes>
+        </div>
+      </>
+    );
+  }
 
   return (
     <SidebarProvider>
-      {/* className="bg-[#F9FAFB]" */}
-      {!isLoginPage && <AppSidebar />}
-      <SidebarInset  >
-        {!isLoginPage && <AppHeader />}
-        <div>
+      {/* Sidebar affichée sauf sur login/signin */}
+      {!isAuthRoute && <AppSidebar />}
+
+      <SidebarInset>
+        {/* Header affiché sauf sur login/signin */}
+        {!isAuthRoute && <AppHeader />}
+        <div className={isAuthRoute ? 'content-full-width' : 'content-with-inset'}>
           <Routes>
-            {/* Pages d'inscription et de connexion */}
+            {/* Pages de connexion */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signin" element={<AccountCreationContainer />} />
-            {/* Les pages de navigations */}
-
-            {/* Accueil principale de l'application */}
             <Route path="/" element={<LoginPage />} />
-
 
             {/* PRATICIEN */}
             <Route path="/praticien/dashboard" element={<AccueilPraticien />} />
-            <Route path="/praticien/premierPas" element={<PremierPas/>} />
-            <Route path="/agenda" element={<Agenda />} />
+            <Route path="/praticien/premierPas" element={<PremierPas />} />
             <Route path="/pratiques" element={<Pratiques />} />
             <Route path="/profil" element={<PraticienProfil />} />
             <Route path="/plage-horaire" element={<Disponibilités />} />
             <Route path="/type-rendez-vous" element={<Crenaux />} />
             <Route path="/praticien/patients" element={<PatientsPraticien />} />
-            <Route path="/completeProfile" element={<CompleteProfile/>}/>
-            <Route path="/editFormation" element={<EditFormation/>}/>
-            <Route path="/troubleConfig" element={<TroubleConfig/>}/>
+            <Route path="/completeProfile" element={<CompleteProfile />} />
+            <Route path="/editFormation" element={<EditFormation />} />
+            <Route path="/troubleConfig" element={<TroubleConfig />} />
 
             {/* PATIENTS */}
             <Route path="/about" element={<ProfilPatient />} />
@@ -66,7 +75,7 @@ function App() {
         </div>
       </SidebarInset>
     </SidebarProvider>
-  )
+  );
 }
 
-export default App
+export default App;
