@@ -48,10 +48,11 @@ const CompleteProfile = () => {
   const [targetDescription, setTargetDescription] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const typingIntervalRef = useRef(null);
-  // Liste des options { id, description }
-  const [availablePatientTypes, setAvailablePatientTypes] = useState([]);
-  const [availablePaymentMethods, setAvailablePaymentMethods] = useState([]);
-  const [siretDetails, setSiretDetails] = useState(null);
+// Liste des options { id, description }
+const [availablePatientTypes, setAvailablePatientTypes] = useState([]);
+const [availablePaymentMethods, setAvailablePaymentMethods] = useState([]);
+const [siretDetails, setSiretDetails] = useState(null);
+const [siretDisplayDetails, setSiretDisplayDetails] = useState(null);
 
   const [codePostalValide, setCodePostalValide] = useState(false);
   const [adresseValide, setAdresseValide] = useState(false);
@@ -73,7 +74,8 @@ const CompleteProfile = () => {
 
   useEffect(() => {
     setSiretSuccess(false);
-    setSiretError("");
+    setSiretError('');
+    handleVerifySiret();
   }, [siret]);
 
   // Récupération des données existantes depuis l'API
@@ -243,26 +245,25 @@ const CompleteProfile = () => {
         mobileCountry.countryCode.length + mobileCountry.len;
     }
 
-    if (telephone.trim() && telephoneCountry) {
-      const expectedLength =
-        telephoneCountry.countryCode.length + telephoneCountry.len;
-    }
-    // Validation adresse
-    if (!adresse.trim()) {
-      newErrors.adresse = "L'adresse est requise.";
-    } else if (
-      codePostal.trim() &&
-      !(await validateAdresse(adresse, codePostal))
-    ) {
-      newErrors.adresse = "Adresse non reconnue pour ce code postal";
-    }
+if (telephone.trim() && telephoneCountry) {
+const expectedLength = telephoneCountry.countryCode.length + telephoneCountry.len;
+
+}
+   // Validation adresse
+  if (!adresse.trim()) {
+    newErrors.adresse = "L'adresse est requise.";
+  } 
+  // else if (codePostal.trim() && !(await validateAdresse(adresse, codePostal))) {
+  //   newErrors.adresse = "Adresse non reconnue pour ce code postal";
+  // }
     if (!codePostal.trim()) {
       newErrors.codePostal = "Le code postal est requis.";
     } else if (!/^\d{5}$/.test(codePostal)) {
       newErrors.codePostal = "Code postal invalide (5 chiffres requis)";
-    } else if (!(await validateCodePostal(codePostal))) {
-      newErrors.codePostal = "Code postal non reconnu";
-    }
+    } 
+    // else if (!(await validateCodePostal(codePostal))) {
+    //   newErrors.codePostal = "Code postal non reconnu";
+    // }
     if (!ville.trim()) newErrors.ville = "La ville est requise.";
     if (!siret.trim()) {
       newErrors.siret = "Le numéro de Siret est requis.";
@@ -340,7 +341,8 @@ const CompleteProfile = () => {
         setCodePostal(etablissement.code_postal || "");
         setVille(etablissement.libelle_commune || "");
         setSiretSuccess(true);
-        setSiretDetails(etablissement);
+        // setSiretDetails(etablissement);
+        setSiretDisplayDetails(etablissement);
         return true;
       }
       return false;
@@ -422,15 +424,16 @@ const CompleteProfile = () => {
   const handleDragOver = (e) => e.preventDefault();
 
   const handleSubmit = async () => {
-    const isValid = await validateFields();
-
-    if (!siretSuccess) {
-      const confirmVerification = window.confirm(
-        "Le SIRET n'a pas été vérifié. Souhaitez-vous tout de même soumettre le formulaire ?"
-      );
-      if (!confirmVerification) return;
-    }
-
+   const isValid = await validateFields();
+  
+  
+    // if (!siretSuccess) {
+    //   const confirmVerification = window.confirm(
+    //     "Le SIRET n'a pas été vérifié. Souhaitez-vous tout de même soumettre le formulaire ?"
+    //   );
+    //   if (!confirmVerification) return;
+    // }
+  
     setIsSubmitting(true);
     try {
       const isFirstCompletion = !initialData?.practitioner_info;
@@ -556,7 +559,7 @@ const CompleteProfile = () => {
         `https://geo.api.gouv.fr/communes?codePostal=${cp}`
       );
       const valid = response.data.length > 0;
-      setCodePostalValide(valid);
+      // setCodePostalValide(valid);
       if (valid && response.data.length === 1) {
         setVille(response.data[0].nom);
       }
@@ -593,7 +596,7 @@ const CompleteProfile = () => {
           // 3) On remplit avec le libellé officiel
           setAdresse(props.label);
           setVille(props.city);
-          setAdresseValide(true);
+          // setAdresseValide(true);
           return true;
         }
       }
@@ -966,56 +969,59 @@ const CompleteProfile = () => {
           </div>
 
           {/* SIRET */}
-          <div>
-            <label className="block text-xs font-medium text-gray-700">
-              Numéro de Siret <span className="text-red-700">*</span>
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={siret}
-                onChange={(e) => {
-                  const formatted = formatSiret(e.target.value);
-                  setSiret(formatted);
-                }}
-                placeholder="123 456 789 01234"
-                className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
-                  errors.siret ? "border-red-500" : "border-gray-300"
-                }`}
-                inputMode="numeric"
-              />
-              <button
-                type="button"
-                onClick={handleVerifySiret}
-                disabled={
-                  isVerifyingSiret || siret.replace(/\s/g, "").length !== 14
-                }
-                className="mt-1 px-3 py-2 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-              >
-                {isVerifyingSiret ? "Vérification..." : "Vérifier"}
-              </button>
-            </div>
-            {errors.siret && (
-              <p className="text-red-600 text-xs mt-1">
-                {errors.siret}
-                {errors.siret.includes("vérifier") && (
-                  <button
-                    type="button"
-                    onClick={handleVerifySiret}
-                    className="ml-2 text-blue-600 underline"
-                  >
-                    Vérifier maintenant
-                  </button>
-                )}
-              </p>
-            )}
-            {siretError && (
-              <p className="text-red-600 text-xs mt-1">{siretError}</p>
-            )}
-            {siretSuccess && (
-              <p className="text-green-600 text-xs mt-1">✓ SIRET validé</p>
-            )}
-          </div>
+<div>
+  <label className="block text-xs font-medium text-gray-700">
+    Numéro de Siret <span className="text-red-700">*</span>
+  </label>
+  <div className="flex gap-2">
+    <input
+      type="text"
+      value={siret}
+      onChange={(e) => {
+        const formatted = formatSiret(e.target.value);
+        setSiret(formatted);
+        handleVerifySiret();
+      }}
+      placeholder="123 456 789 01234"
+      className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
+        errors.siret ? "border-red-500" : "border-gray-300"
+      }`}
+      inputMode="numeric"
+    />
+    {/* <button
+      type="button"
+      onClick={handleVerifySiret}
+      disabled={isVerifyingSiret || siret.replace(/\s/g, '').length !== 14}
+      className="mt-1 px-3 py-2 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+    >
+      {isVerifyingSiret ? 'Vérification...' : 'Vérifier'}
+    </button> */}
+  </div>
+  {errors.siret && (
+    <p className="text-red-600 text-xs mt-1">
+      {errors.siret}
+      {errors.siret.includes('vérifier') && (
+        <button
+          type="button"
+          onClick={handleVerifySiret}
+          className="ml-2 text-blue-600 underline"
+        >
+          Vérifier maintenant
+        </button>
+      )}
+    </p>
+  )}
+  {siretError && <p className="text-red-600 text-xs mt-1">{siretError}</p>}
+  {siretSuccess && siretDisplayDetails && (
+  <div className="text-green-600 text-xs mt-1 space-y-1">
+    <p>✓ SIRET validé</p>
+    <p><strong>Entreprise :</strong> {siretDisplayDetails.unite_legale?.denomination || siretDisplayDetails.enseigne || "Nom indisponible"}</p>
+    <p><strong>SIREN :</strong> {siretDisplayDetails.siret?.slice(0, 9)}</p>
+    <p><strong>NIC :</strong> {siretDisplayDetails.siret?.slice(9)}</p>
+  </div>
+)}
+
+</div>
 
           {/* Adresse */}
           <div>
