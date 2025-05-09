@@ -7,18 +7,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/Dialog";
-<<<<<<< HEAD
 import {
   ArrowLeftCircle,
   Linkedin,
   Facebook,
   Save,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-=======
-import { ArrowLeftCircle, Linkedin, Facebook, Save } from "lucide-react";
 import { Button } from "@/components/ui/Button";
->>>>>>> 5c38d4c9f952123b7db85e6f17664b879b248110
 import PhoneInput from "react-phone-input-2";
 import axios from "axios";
 import svg from "./image.svg";
