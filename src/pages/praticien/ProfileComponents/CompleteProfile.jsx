@@ -63,6 +63,7 @@ const CompleteProfile = () => {
 const [availablePatientTypes, setAvailablePatientTypes] = useState([]);
 const [availablePaymentMethods, setAvailablePaymentMethods] = useState([]);
 const [siretDetails, setSiretDetails] = useState(null);
+const [siretDisplayDetails, setSiretDisplayDetails] = useState(null);
 
 const [codePostalValide, setCodePostalValide] = useState(false);
 const [adresseValide, setAdresseValide] = useState(false);
@@ -86,6 +87,7 @@ const [paymentMethodIds, setPaymentMethodIds] = useState([]);
   useEffect(() => {
     setSiretSuccess(false);
     setSiretError('');
+    handleVerifySiret();
   }, [siret]);
 
   // Récupération des données existantes depuis l'API
@@ -248,16 +250,18 @@ const expectedLength = telephoneCountry.countryCode.length + telephoneCountry.le
    // Validation adresse
   if (!adresse.trim()) {
     newErrors.adresse = "L'adresse est requise.";
-  } else if (codePostal.trim() && !(await validateAdresse(adresse, codePostal))) {
-    newErrors.adresse = "Adresse non reconnue pour ce code postal";
-  }
+  } 
+  // else if (codePostal.trim() && !(await validateAdresse(adresse, codePostal))) {
+  //   newErrors.adresse = "Adresse non reconnue pour ce code postal";
+  // }
     if (!codePostal.trim()) {
       newErrors.codePostal = "Le code postal est requis.";
     } else if (!/^\d{5}$/.test(codePostal)) {
       newErrors.codePostal = "Code postal invalide (5 chiffres requis)";
-    } else if (!(await validateCodePostal(codePostal))) {
-      newErrors.codePostal = "Code postal non reconnu";
-    }
+    } 
+    // else if (!(await validateCodePostal(codePostal))) {
+    //   newErrors.codePostal = "Code postal non reconnu";
+    // }
     if (!ville.trim()) newErrors.ville = "La ville est requise.";
     if (!siret.trim()) {
       newErrors.siret = "Le numéro de Siret est requis.";
@@ -326,7 +330,8 @@ const expectedLength = telephoneCountry.countryCode.length + telephoneCountry.le
         setCodePostal(etablissement.code_postal || '');
         setVille(etablissement.libelle_commune || '');
         setSiretSuccess(true);
-        setSiretDetails(etablissement);
+        // setSiretDetails(etablissement);
+        setSiretDisplayDetails(etablissement);
         return true;
       }
       return false;
@@ -409,12 +414,12 @@ useEffect(() => {
    const isValid = await validateFields();
   
   
-    if (!siretSuccess) {
-      const confirmVerification = window.confirm(
-        "Le SIRET n'a pas été vérifié. Souhaitez-vous tout de même soumettre le formulaire ?"
-      );
-      if (!confirmVerification) return;
-    }
+    // if (!siretSuccess) {
+    //   const confirmVerification = window.confirm(
+    //     "Le SIRET n'a pas été vérifié. Souhaitez-vous tout de même soumettre le formulaire ?"
+    //   );
+    //   if (!confirmVerification) return;
+    // }
   
     setIsSubmitting(true);
     try {
@@ -531,7 +536,7 @@ useEffect(() => {
     try {
       const response = await axios.get(`https://geo.api.gouv.fr/communes?codePostal=${cp}`);
       const valid = response.data.length > 0;
-      setCodePostalValide(valid);
+      // setCodePostalValide(valid);
       if (valid && response.data.length === 1) {
         setVille(response.data[0].nom);
       }
@@ -568,7 +573,7 @@ useEffect(() => {
           // 3) On remplit avec le libellé officiel
           setAdresse(props.label);
           setVille(props.city);
-          setAdresseValide(true);
+          // setAdresseValide(true);
           return true;
         }
       }
@@ -903,6 +908,7 @@ const validateDate = () => {
       onChange={(e) => {
         const formatted = formatSiret(e.target.value);
         setSiret(formatted);
+        handleVerifySiret();
       }}
       placeholder="123 456 789 01234"
       className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
@@ -910,14 +916,14 @@ const validateDate = () => {
       }`}
       inputMode="numeric"
     />
-    <button
+    {/* <button
       type="button"
       onClick={handleVerifySiret}
       disabled={isVerifyingSiret || siret.replace(/\s/g, '').length !== 14}
       className="mt-1 px-3 py-2 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
     >
       {isVerifyingSiret ? 'Vérification...' : 'Vérifier'}
-    </button>
+    </button> */}
   </div>
   {errors.siret && (
     <p className="text-red-600 text-xs mt-1">
@@ -934,7 +940,15 @@ const validateDate = () => {
     </p>
   )}
   {siretError && <p className="text-red-600 text-xs mt-1">{siretError}</p>}
-  {siretSuccess && <p className="text-green-600 text-xs mt-1">✓ SIRET validé</p>}
+  {siretSuccess && siretDisplayDetails && (
+  <div className="text-green-600 text-xs mt-1 space-y-1">
+    <p>✓ SIRET validé</p>
+    <p><strong>Entreprise :</strong> {siretDisplayDetails.unite_legale?.denomination || siretDisplayDetails.enseigne || "Nom indisponible"}</p>
+    <p><strong>SIREN :</strong> {siretDisplayDetails.siret?.slice(0, 9)}</p>
+    <p><strong>NIC :</strong> {siretDisplayDetails.siret?.slice(9)}</p>
+  </div>
+)}
+
 </div>
 
           {/* Adresse */}
