@@ -6,7 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/Popover";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/Calendar";
 import { cn } from "@/lib/utils";
 import { Controller } from "react-hook-form";

@@ -1,6 +1,6 @@
 // src/components/General.jsx
 import React, { Component } from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { SaveIcon, PlusCircle, Trash2, CalendarClock, InfoIcon } from 'lucide-react';
 import { parse, isBefore, addMinutes, format } from 'date-fns';
 import BASE_URL from '@/pages/config/baseurl';

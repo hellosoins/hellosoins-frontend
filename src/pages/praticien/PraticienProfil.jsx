@@ -29,7 +29,7 @@ import Information from "./ProfileComponents/Information";
 import Formation from "./ProfileComponents/Formation";
 import TroubleManager from "./ProfileComponents/TroubleManager";
 import Avis from "./ProfileComponents/Avis";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import Cabinets from "./ProfileComponents/Cabinets";
 import axios from "axios";
 import { Link } from "react-router-dom";

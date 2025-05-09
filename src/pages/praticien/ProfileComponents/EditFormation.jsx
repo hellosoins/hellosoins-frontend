@@ -1,5 +1,5 @@
 import React, { useState, useEffect, Fragment } from 'react';
-import { Button } from '@/components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { ArrowLeftCircle, Save, ChevronDown, Check, Loader2, X } from 'lucide-react';
 import { Listbox, Transition } from '@headlessui/react';
 import { findAllSpeciality } from '@/services/speciality-services';

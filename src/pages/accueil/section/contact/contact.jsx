@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Mail, Phone, MapPin } from "lucide-react";
 
 export default function ContactSection() {

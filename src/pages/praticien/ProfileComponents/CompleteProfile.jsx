@@ -17,7 +17,7 @@ import {
   Facebook,
   Save,
 } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import PhoneInput from "react-phone-input-2";
 import axios from "axios";
 import svg from "./image.svg";
