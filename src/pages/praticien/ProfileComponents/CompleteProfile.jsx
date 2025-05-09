@@ -954,7 +954,7 @@ const expectedLength = telephoneCountry.countryCode.length + telephoneCountry.le
                 name: "mobile",
                 required: true,
                 maxLength: 20,
-                placeholder: "+33 6 12 34 56 78",
+                placeholder: "Entrer votre mobile",
               }}
               inputStyle={{ width: "100%", fontSize: "12px", height: "32px" }}
               containerClass="phone-input"
