@@ -1,12 +1,7 @@
 // TroubleManager.jsx
 import React, { useState } from 'react';
-<<<<<<< HEAD
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/Dialog";
 import { Button } from "@/components/ui/button";
-=======
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/Dialog";
-import { Button } from "@/components/ui/Button";
->>>>>>> 5c38d4c9f952123b7db85e6f17664b879b248110
 import { Loader2 } from 'lucide-react';
 import TableList from './TroubleEtSolution';
 import TroubleConfig from './TroubleConfig';
