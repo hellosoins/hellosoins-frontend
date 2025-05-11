@@ -21,11 +21,12 @@ import EditFormation from './pages/praticien/ProfileComponents/EditFormation';
 import TroubleConfig from './pages/praticien/ProfileComponents/TroubleConfig';
 import PremierPas from './pages/praticien/PremierPas';
 import Agendav2 from './pages/praticien/Agenda';
+import DoubleAuth from './components/common/Doubleauth';
 
 function App() {
   const location = useLocation();
   const isAgendaRoute = location.pathname === '/agenda';
-  const isAuthRoute = ['/', '/login', '/signin'].includes(location.pathname);
+  const isAuthRoute = ['/', '/login', '/signin', '/code'].includes(location.pathname);
 
   // Si /agenda, on n'utilise ni SidebarProvider ni SidebarInset
   if (isAgendaRoute) {
@@ -34,6 +35,7 @@ function App() {
         <div className="content-full-width">
           <Routes>
             <Route path="/agenda" element={<Agendav2 />} />
+            
           </Routes>
         </div>
       </>
@@ -54,6 +56,7 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signin" element={<AccountCreationContainer />} />
             <Route path="/" element={<LoginPage />} />
+            <Route path="/code" element={<DoubleAuth />} />
 
             {/* PRATICIEN */}
             <Route path="/praticien/dashboard" element={<AccueilPraticien />} />
