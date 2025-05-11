@@ -6,6 +6,7 @@ import {
   getPaymentMethods,
   getPatientTypes
 } from '@/services/profile-service';
+import { formatPhoneNumber } from 'react-phone-number-input'
 
 const Information = ({ practitionerData }) => {
   // États pour les données fetchées
@@ -72,8 +73,8 @@ const Information = ({ practitionerData }) => {
           <InfoIcon size={17} /> Informations professionnelles
         </h2>
         <div className="space-y-4 text-xs text-gray-700">
-          <div className="flex flex-col md:flex-row mb-1">
-            <div className="w-full md:w-1/3 pr-2 font-semibold text-left md:text-right">
+          <div className="flex  flex-col md:flex-row mb-1">
+            <div className="w-full md:w-1/3 pr-2 font-semibold text-left">
               Description :
             </div>
             <div className="w-full md:w-2/3">
@@ -81,7 +82,7 @@ const Information = ({ practitionerData }) => {
             </div>
           </div>
           <div className="flex flex-col md:flex-row mb-1">
-            <div className="w-full md:w-1/3 pr-2 font-semibold text-left md:text-right">
+            <div className="w-full md:w-1/3 pr-2 font-semibold text-left">
               Civilité :
             </div>
             <div className="w-full md:w-2/3">
@@ -89,7 +90,7 @@ const Information = ({ practitionerData }) => {
             </div>
           </div>
           <div className="flex flex-col md:flex-row mb-1">
-            <div className="w-full md:w-1/3 pr-2 font-semibold text-left md:text-right">
+            <div className="w-full md:w-1/3 pr-2 font-semibold text-left">
               Type de patient :
             </div>
             <div className="w-full md:w-2/3 overflow-hidden">
@@ -112,15 +113,15 @@ const Information = ({ practitionerData }) => {
             </div>
           </div>
           <div className="flex flex-col md:flex-row mb-1">
-            <div className="w-full md:w-1/3 pr-2 font-semibold text-left md:text-right">
+            <div className="w-full md:w-1/3 pr-2 font-semibold text-left">
               Téléphone :
             </div>
             <div className="w-full md:w-2/3">
-              {practitionerData.mobile_number}
+              {formatPhoneNumber(practitionerData.mobile_number)}
             </div>
           </div>
           <div className="flex flex-col md:flex-row mb-1">
-            <div className="w-full md:w-1/3 pr-2 font-semibold text-left md:text-right">
+            <div className="w-full md:w-1/3 pr-2 font-semibold text-left">
               SIRET :
             </div>
             <div className="w-full md:w-2/3">

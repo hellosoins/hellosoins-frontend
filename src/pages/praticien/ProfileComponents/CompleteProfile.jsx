@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
 import {
@@ -9,19 +10,19 @@ import {
 } from "@/components/ui/Dialog";
 import { ArrowLeftCircle, Linkedin, Facebook, Save } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import PhoneInput from "react-phone-input-2";
 import axios from "axios";
 import svg from "./image.svg";
 import { useLocation } from "react-router-dom";
 import { API_URL } from "@/services/api";
 import { Pen, WandSparkles } from "lucide-react";
+// Ajout du nouveau phone input
+import PhoneManager from "@/components/common/phone-manager";
 
 const MANDATORY_FIELDS = 15;
 
 const CompleteProfile = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
-  // 1. Récupération de la donnée passée
   const location = useLocation();
   const initialImgFile = location.state?.imgFile || null;
 
@@ -48,11 +49,11 @@ const CompleteProfile = () => {
   const [targetDescription, setTargetDescription] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const typingIntervalRef = useRef(null);
-// Liste des options { id, description }
-const [availablePatientTypes, setAvailablePatientTypes] = useState([]);
-const [availablePaymentMethods, setAvailablePaymentMethods] = useState([]);
-const [siretDetails, setSiretDetails] = useState(null);
-const [siretDisplayDetails, setSiretDisplayDetails] = useState(null);
+  // Liste des options { id, description }
+  const [availablePatientTypes, setAvailablePatientTypes] = useState([]);
+  const [availablePaymentMethods, setAvailablePaymentMethods] = useState([]);
+  const [siretDetails, setSiretDetails] = useState(null);
+  const [siretDisplayDetails, setSiretDisplayDetails] = useState(null);
 
   const [codePostalValide, setCodePostalValide] = useState(false);
   const [adresseValide, setAdresseValide] = useState(false);
@@ -74,7 +75,7 @@ const [siretDisplayDetails, setSiretDisplayDetails] = useState(null);
 
   useEffect(() => {
     setSiretSuccess(false);
-    setSiretError('');
+    setSiretError("");
     handleVerifySiret();
   }, [siret]);
 
@@ -166,7 +167,7 @@ const [siretDisplayDetails, setSiretDisplayDetails] = useState(null);
       prenom.trim() ? 1 : 0,
       dateNaissance.trim() ? 1 : 0,
       email.trim() ? 1 : 0,
-      mobile.trim() ? 1 : 0,
+      mobile?.trim() ? 1 : 0,
       adresse.trim() ? 1 : 0,
       codePostal.trim() ? 1 : 0,
       ville.trim() ? 1 : 0,
@@ -245,22 +246,22 @@ const [siretDisplayDetails, setSiretDisplayDetails] = useState(null);
         mobileCountry.countryCode.length + mobileCountry.len;
     }
 
-if (telephone.trim() && telephoneCountry) {
-const expectedLength = telephoneCountry.countryCode.length + telephoneCountry.len;
-
-}
-   // Validation adresse
-  if (!adresse.trim()) {
-    newErrors.adresse = "L'adresse est requise.";
-  } 
-  // else if (codePostal.trim() && !(await validateAdresse(adresse, codePostal))) {
-  //   newErrors.adresse = "Adresse non reconnue pour ce code postal";
-  // }
+    if (telephone.trim() && telephoneCountry) {
+      const expectedLength =
+        telephoneCountry.countryCode.length + telephoneCountry.len;
+    }
+    // Validation adresse
+    if (!adresse.trim()) {
+      newErrors.adresse = "L'adresse est requise.";
+    }
+    // else if (codePostal.trim() && !(await validateAdresse(adresse, codePostal))) {
+    //   newErrors.adresse = "Adresse non reconnue pour ce code postal";
+    // }
     if (!codePostal.trim()) {
       newErrors.codePostal = "Le code postal est requis.";
     } else if (!/^\d{5}$/.test(codePostal)) {
       newErrors.codePostal = "Code postal invalide (5 chiffres requis)";
-    } 
+    }
     // else if (!(await validateCodePostal(codePostal))) {
     //   newErrors.codePostal = "Code postal non reconnu";
     // }
@@ -424,16 +425,15 @@ const expectedLength = telephoneCountry.countryCode.length + telephoneCountry.le
   const handleDragOver = (e) => e.preventDefault();
 
   const handleSubmit = async () => {
-   const isValid = await validateFields();
-  
-  
+    const isValid = await validateFields();
+
     // if (!siretSuccess) {
     //   const confirmVerification = window.confirm(
     //     "Le SIRET n'a pas été vérifié. Souhaitez-vous tout de même soumettre le formulaire ?"
     //   );
     //   if (!confirmVerification) return;
     // }
-  
+
     setIsSubmitting(true);
     try {
       const isFirstCompletion = !initialData?.practitioner_info;
@@ -877,50 +877,12 @@ const expectedLength = telephoneCountry.countryCode.length + telephoneCountry.le
               Téléphone (facultatif)
             </label>
             {/* Téléphone */}
-            <PhoneInput
-              country="fr"
-              localization="fr"
-              onlyCountries={[
-                "fr",
-                "be",
-                "lu",
-                "de",
-                "ch",
-                "it",
-                "es",
-                "mc",
-                "ad",
-                "mg",
-              ]}
+            <PhoneManager
               value={telephone}
-              onChange={(value, countryData, event, formattedValue) => {
-                const dialCode = countryData.dialCode;
-                const eventType = event.type;
-                // if(eventType == 'change'){
-                  // console.log("CHANGE")
-                  // console.log(value);
-                  setTelephone(formattedValue);
-                  setTelephoneCountry(countryData);
-                // }
-                // if(eventType == 'click'){
-                //   console.log("CLICK")
-                //   console.log({value, countryData, formattedValue});
-                //   // setTelephone("");
-                //   setTelephoneCountry(countryData);
-                // }
-              }}
-              inputProps={{
-                name: "telephone",
-                required: false,
-                maxLength: 20,
-                placeholder: "Entrer votre numéro de téléphone",
-              }}
-              inputStyle={{ width: "100%", fontSize: "12px", height: "32px" }}
-              containerClass="phone-input"
-              specialLabel=""
-              prefix=""
-              disableCountryCode={true}
-              disableCountryGuess={true}
+              onChange={setTelephone}
+              placeholder="Entrez votre numéro téléphone"
+              className="h-[32px] px-1 text-sm border rounded-md"
+              name="telephone"
             />
           </div>
 
@@ -930,38 +892,12 @@ const expectedLength = telephoneCountry.countryCode.length + telephoneCountry.le
               Mobile <span className="text-red-700">*</span>
             </label>
             {/* Mobile */}
-            <PhoneInput
-              country="fr"
-              localization="fr"
-              onlyCountries={[
-                "fr",
-                "be",
-                "lu",
-                "de",
-                "ch",
-                "it",
-                "es",
-                "mc",
-                "ad",
-                "mg",
-              ]}
+            <PhoneManager
               value={mobile}
-              onChange={(value, countryData, event, formattedValue) => {
-                setMobile(formattedValue);
-                setMobileCountry(countryData);
-              }}
-              inputProps={{
-                name: "mobile",
-                required: true,
-                maxLength: 20,
-                placeholder: "Entrer votre mobile",
-              }}
-              inputStyle={{ width: "100%", fontSize: "12px", height: "32px" }}
-              containerClass="phone-input"
-              specialLabel=""
-              prefix=""
-              disableCountryCode={true}
-              disableCountryGuess={true}
+              onChange={(value) => setMobile(value || "")}
+              placeholder="Entrez votre numéro mobile"
+              className="h-[32px] px-1 text-sm border rounded-md"
+              name="mobile"
             />
             {errors.mobile && (
               <p className="text-red-600 text-xs">{errors.mobile}</p>
@@ -969,26 +905,26 @@ const expectedLength = telephoneCountry.countryCode.length + telephoneCountry.le
           </div>
 
           {/* SIRET */}
-<div>
-  <label className="block text-xs font-medium text-gray-700">
-    Numéro de Siret <span className="text-red-700">*</span>
-  </label>
-  <div className="flex gap-2">
-    <input
-      type="text"
-      value={siret}
-      onChange={(e) => {
-        const formatted = formatSiret(e.target.value);
-        setSiret(formatted);
-        handleVerifySiret();
-      }}
-      placeholder="123 456 789 01234"
-      className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
-        errors.siret ? "border-red-500" : "border-gray-300"
-      }`}
-      inputMode="numeric"
-    />
-    {/* <button
+          <div>
+            <label className="block text-xs font-medium text-gray-700">
+              Numéro de Siret <span className="text-red-700">*</span>
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={siret}
+                onChange={(e) => {
+                  const formatted = formatSiret(e.target.value);
+                  setSiret(formatted);
+                  handleVerifySiret();
+                }}
+                placeholder="123 456 789 01234"
+                className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
+                  errors.siret ? "border-red-500" : "border-gray-300"
+                }`}
+                inputMode="numeric"
+              />
+              {/* <button
       type="button"
       onClick={handleVerifySiret}
       disabled={isVerifyingSiret || siret.replace(/\s/g, '').length !== 14}
@@ -996,32 +932,43 @@ const expectedLength = telephoneCountry.countryCode.length + telephoneCountry.le
     >
       {isVerifyingSiret ? 'Vérification...' : 'Vérifier'}
     </button> */}
-  </div>
-  {errors.siret && (
-    <p className="text-red-600 text-xs mt-1">
-      {errors.siret}
-      {errors.siret.includes('vérifier') && (
-        <button
-          type="button"
-          onClick={handleVerifySiret}
-          className="ml-2 text-blue-600 underline"
-        >
-          Vérifier maintenant
-        </button>
-      )}
-    </p>
-  )}
-  {siretError && <p className="text-red-600 text-xs mt-1">{siretError}</p>}
-  {siretSuccess && siretDisplayDetails && (
-  <div className="text-green-600 text-xs mt-1 space-y-1">
-    <p>✓ SIRET validé</p>
-    <p><strong>Entreprise :</strong> {siretDisplayDetails.unite_legale?.denomination || siretDisplayDetails.enseigne || "Nom indisponible"}</p>
-    <p><strong>SIREN :</strong> {siretDisplayDetails.siret?.slice(0, 9)}</p>
-    <p><strong>NIC :</strong> {siretDisplayDetails.siret?.slice(9)}</p>
-  </div>
-)}
-
-</div>
+            </div>
+            {errors.siret && (
+              <p className="text-red-600 text-xs mt-1">
+                {errors.siret}
+                {errors.siret.includes("vérifier") && (
+                  <button
+                    type="button"
+                    onClick={handleVerifySiret}
+                    className="ml-2 text-blue-600 underline"
+                  >
+                    Vérifier maintenant
+                  </button>
+                )}
+              </p>
+            )}
+            {siretError && (
+              <p className="text-red-600 text-xs mt-1">{siretError}</p>
+            )}
+            {siretSuccess && siretDisplayDetails && (
+              <div className="text-green-600 text-xs mt-1 space-y-1">
+                <p>✓ SIRET validé</p>
+                <p>
+                  <strong>Entreprise :</strong>{" "}
+                  {siretDisplayDetails.unite_legale?.denomination ||
+                    siretDisplayDetails.enseigne ||
+                    "Nom indisponible"}
+                </p>
+                <p>
+                  <strong>SIREN :</strong>{" "}
+                  {siretDisplayDetails.siret?.slice(0, 9)}
+                </p>
+                <p>
+                  <strong>NIC :</strong> {siretDisplayDetails.siret?.slice(9)}
+                </p>
+              </div>
+            )}
+          </div>
 
           {/* Adresse */}
           <div>
