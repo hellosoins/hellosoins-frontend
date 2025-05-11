@@ -46,12 +46,12 @@ export const LoginForm = ({ className, ...props }) => {
  
 
       // Récupération des infos supplémentaires
-      const userInfo = await getNumberAndName(response.user.email)
+      const userInfo = await getNumberAndName(response.user.mail)
       
       // Préparation des données pour le code
       const details = {
         name: userInfo.name,
-        mail: response.user.email,
+        mail: response.user.mail,
         numero: userInfo.mobile_number,
         token: response.token
       }
