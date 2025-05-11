@@ -1,19 +1,19 @@
 import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { cn } from "@/lib/utils";
-import { User, Lock, Eye, EyeOff } from "lucide-react";
 import { Label } from "../ui/Label";
-import PhoneInput from "react-phone-input-2";
-import "react-phone-input-2/lib/material.css";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { User, Lock, Eye, EyeOff } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { parsePhoneNumberFromString } from 'libphonenumber-js';
-import logo from "../../assets/hs2.svg";
-import FormProgressBar from "./FormProgressBar";
 import { isValidPhoneNumber } from 'libphonenumber-js';
-import axios from "axios";
 import { API_URL } from "@/services/api";
+import PhoneInput from "react-phone-input-2";
+import FormProgressBar from "./FormProgressBar";
+import logo from "../../assets/hs2.svg";
+import axios from "axios";
+import "react-phone-input-2/lib/material.css";
 
 
 // Tableau des étapes (deux étapes)
@@ -310,7 +310,7 @@ const generatePassword = () => {
   }}
   render={({ field: { onChange, value } }) => (
     <PhoneInput
-      country="fr" // Madagascar par défaut
+      country="fr"
       onlyCountries={['fr', 'be', 'lu', 'de', 'ch', 'it', 'es', 'mc', 'ad', 'mg']}
       value={value}
       onChange={(phone, country) => handlePhoneChange(phone, country, onChange)}

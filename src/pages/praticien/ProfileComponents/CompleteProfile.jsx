@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/Button";
 import { Controller, useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
 import {
   Dialog,
@@ -8,23 +9,36 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/Dialog";
-import { ArrowLeftCircle, Linkedin, Facebook, Save } from "lucide-react";
-import { Button } from "@/components/ui/Button";
+import { 
+  ArrowLeftCircle,
+  Linkedin,
+  Facebook,
+  Save,
+  WandSparkles
+} from "lucide-react";
+import { API_URL } from "@/services/api";
 import axios from "axios";
 import svg from "./image.svg";
-import { useLocation } from "react-router-dom";
-import { API_URL } from "@/services/api";
-import { Pen, WandSparkles } from "lucide-react";
-// Ajout du nouveau phone input
 import PhoneManager from "@/components/common/phone-manager";
 
 const MANDATORY_FIELDS = 15;
 
 const CompleteProfile = () => {
+
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const location = useLocation();
   const initialImgFile = location.state?.imgFile || null;
+
+  const {
+    control,
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors: formErr },
+    trigger,
+    setValue,
+  } = useForm();
 
   // États pour les champs du formulaire et les erreurs
   const [initialData, setInitialData] = useState(null);
@@ -46,8 +60,8 @@ const CompleteProfile = () => {
   const [facebookLink, setFacebookLink] = useState("");
   const [consultationTypes, setConsultationTypes] = useState([]);
   const [description, setDescription] = useState("");
-  const [targetDescription, setTargetDescription] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [targetDescription, setTargetDescription] = useState("");
   const typingIntervalRef = useRef(null);
   // Liste des options { id, description }
   const [availablePatientTypes, setAvailablePatientTypes] = useState([]);
@@ -70,18 +84,10 @@ const CompleteProfile = () => {
   const [isVerifyingSiret, setIsVerifyingSiret] = useState(false);
   const [siretError, setSiretError] = useState("");
   const [siretSuccess, setSiretSuccess] = useState(false);
-  const [telephoneCountry, setTelephoneCountry] = useState(null);
-  const [mobileCountry, setMobileCountry] = useState(null);
 
+  
+// FETCH DES DONNEES ENREGISTREES
   useEffect(() => {
-    setSiretSuccess(false);
-    setSiretError("");
-    handleVerifySiret();
-  }, [siret]);
-
-  // Récupération des données existantes depuis l'API
-  useEffect(() => {
-    // 1) Récupérer options
     const fetchOptions = async () => {
       const token = localStorage.getItem("authToken");
       const [ptRes, pmRes] = await Promise.all([
@@ -95,7 +101,6 @@ const CompleteProfile = () => {
       setAvailablePatientTypes(ptRes.data.data); // ex. [{id:1,description:"Hommes"},…]
       setAvailablePaymentMethods(pmRes.data.data);
     };
-    // 2) Récupérer sélections actuelles
     const fetchSelections = async () => {
       const token = localStorage.getItem("authToken");
       const [selPt, selPm] = await Promise.all([
@@ -158,7 +163,8 @@ const CompleteProfile = () => {
     fetchPractitioner();
   }, []);
 
-  // Mise à jour du pourcentage de complétion
+
+// MISE A JOUR % DE COMPLETION PROFIL
   useEffect(() => {
     const fields = [
       profilePic ? 1 : 0,
@@ -197,112 +203,13 @@ const CompleteProfile = () => {
     paymentMethodIds,
   ]);
 
-  // Formatage numéros FR: espaces tous les 2 chiffres
-  const formatFRNumber = (num) => {
-    return num.match(/.{1,2}/g)?.join(" ") || num;
-  };
 
-  // Handlers pour téléphone & mobile
-  const handleTelephoneChange = (value) => {
-    const digits = value.replace(/\D/g, "").slice(0, FR_PHONE_LENGTH);
-    setTelephone(formatFRNumber(digits));
-  };
-  const handleMobileChange = (value) => {
-    const digits = value.replace(/\D/g, "").slice(0, FR_PHONE_LENGTH);
-    setMobile(formatFRNumber(digits));
-  };
-
-  // Validation des champs obligatoires
-  const validateFields = async () => {
-    const newErrors = {};
-    if (!profilePic) newErrors.profilePic = "La photo de profil est requise.";
-    if (!civilite.trim()) newErrors.civilite = "La civilité est requise.";
-    if (!nom.trim()) newErrors.nom = "Le nom est requis.";
-    if (!prenom.trim()) newErrors.prenom = "Le prénom est requis.";
-    if (!dateNaissance.trim())
-      newErrors.dateNaissance = "La date de naissance est requise.";
-    if (!email.trim()) newErrors.email = "L'email est requis.";
-    else if (!/^\S+@\S+\.\S+$/.test(email))
-      newErrors.email = "Le format de l'email est invalide.";
-    // Supprimer FR_PHONE_LENGTH
-
-    // Dans le useEffect de progression :
-    const mobileValid = mobileCountry
-      ? mobile.replace(/\D/g, "").length ===
-        mobileCountry.countryCode.length + mobileCountry.len
-      : false;
-
-    const telephoneValid =
-      telephoneCountry && telephone
-        ? telephone.replace(/\D/g, "").length ===
-          telephoneCountry.countryCode.length + telephoneCountry.len
-        : true; // Téléphone est facultatif
-
-    // Dans validateFields :
-    if (!mobile.trim()) {
-      newErrors.mobile = "Le numéro mobile est requis.";
-    } else if (mobileCountry) {
-      const expectedLength =
-        mobileCountry.countryCode.length + mobileCountry.len;
-    }
-
-    if (telephone.trim() && telephoneCountry) {
-      const expectedLength =
-        telephoneCountry.countryCode.length + telephoneCountry.len;
-    }
-    // Validation adresse
-    if (!adresse.trim()) {
-      newErrors.adresse = "L'adresse est requise.";
-    }
-    // else if (codePostal.trim() && !(await validateAdresse(adresse, codePostal))) {
-    //   newErrors.adresse = "Adresse non reconnue pour ce code postal";
-    // }
-    if (!codePostal.trim()) {
-      newErrors.codePostal = "Le code postal est requis.";
-    } else if (!/^\d{5}$/.test(codePostal)) {
-      newErrors.codePostal = "Code postal invalide (5 chiffres requis)";
-    }
-    // else if (!(await validateCodePostal(codePostal))) {
-    //   newErrors.codePostal = "Code postal non reconnu";
-    // }
-    if (!ville.trim()) newErrors.ville = "La ville est requise.";
-    if (!siret.trim()) {
-      newErrors.siret = "Le numéro de Siret est requis.";
-    } else if (siret.replace(/\s/g, "").length !== 14) {
-      newErrors.siret = "Le SIRET doit contenir exactement 14 chiffres";
-    }
-    if (!description.trim())
-      newErrors.description = "La description est requise.";
-    if (consultationTypes.length === 0)
-      newErrors.consultationTypes =
-        "Veuillez sélectionner au moins un type de consultation.";
-    if (patientTypeIds.length === 0)
-      newErrors.patientTypes =
-        "Veuillez sélectionner au moins un type de patient.";
-    if (paymentMethodIds.length === 0)
-      newErrors.paymentMethods =
-        "Veuillez sélectionner au moins un moyen de paiement.";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Toggle pour checkboxes
-  const handleToggle = (option, state, setState) => {
-    setState(
-      state.includes(option)
-        ? state.filter((item) => item !== option)
-        : [...state, option]
-    );
-  };
-
-  const handleChangePhoto = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setProfilPhotoFile(file);
-      setProfilePic(URL.createObjectURL(file));
-    }
-  };
-
+// GESTION NUMERO-DE-SIRET
+  useEffect(() => {
+    setSiretSuccess(false);
+    setSiretError("");
+    handleVerifySiret();
+  }, [siret]);
   const handleVerifySiret = async () => {
     const cleanedSiret = siret.replace(/\s/g, "");
 
@@ -315,7 +222,6 @@ const CompleteProfile = () => {
     setIsVerifyingSiret(true);
     setSiretError("");
     setSiretSuccess(false);
-
     try {
       const proxyUrl = "https://api.corsproxy.io/";
       const response = await axios.get(
@@ -327,16 +233,13 @@ const CompleteProfile = () => {
           },
         }
       );
-
       if (response.data.etablissement) {
         const etablissement = response.data.etablissement;
         const addressParts = [
           etablissement.numero_voie,
           etablissement.type_voie,
           etablissement.libelle_voie,
-        ]
-          .filter(Boolean)
-          .join(" ");
+        ].filter(Boolean).join(" ");
 
         setAdresse(addressParts);
         setCodePostal(etablissement.code_postal || "");
@@ -348,36 +251,226 @@ const CompleteProfile = () => {
       }
       return false;
     } catch (error) {
-      if (error.response?.status === 404) {
-        setSiretError("SIRET non trouvé");
-      } else {
-        setSiretError("Erreur lors de la vérification du SIRET");
-      }
-      return false;
+        if (error.response?.status === 404) {
+          setSiretError("SIRET non trouvé");
+        } else {
+          setSiretError("Erreur lors de la vérification du SIRET");
+        }
+        return false;
     } finally {
       setIsVerifyingSiret(false);
     }
   };
   const formatSiret = (value) => {
-    // Nettoyer et limiter à 14 chiffres
+    // Limitation du siret sur 14 chiffres
     const digits = value.replace(/\D/g, "").slice(0, 14);
     const parts = [];
-
     // Découpage 3-3-3-5
     for (let i = 0; i < digits.length; i += 3) {
       if (i < 9) {
-        // Les trois premiers groupes de 3
-        parts.push(digits.substr(i, 3));
-      } else {
-        // Le reste en un seul groupe (jusqu'à 5 caractères)
-        parts.push(digits.substr(i));
+        parts.push(digits.substr(i, 3));// Les trois premiers groupes de 3
+      }else {
+        parts.push(digits.substr(i));// Le reste en un seul groupe (jusqu'à 5 caractères)
         break;
       }
-    }
-
-    return parts.join(" ");
+    }return parts.join(" ");
   };
 
+
+// GESTION DU SAISIE-DE-DESCRIPTION
+  useEffect(() => {
+    if (!isTyping || !targetDescription) return;
+
+    let idx = 0;
+    typingIntervalRef.current = setInterval(() => {
+      setDescription((prev) => prev + targetDescription[idx]);
+      idx += 1;
+      if (idx >= targetDescription.length) {
+        clearInterval(typingIntervalRef.current);
+        setIsTyping(false);
+      }
+    }, 50);
+
+    return () => clearInterval(typingIntervalRef.current);
+  }, [isTyping, targetDescription]);
+  const generateExampleDescription = () => {
+    setIsTyping(true);
+    setDescription("");
+
+    const examples = [
+      "Professionnel de santé formé à [votre diplôme], j'accompagne mes patients avec une approche bienveillante et personnalisée. Mon expérience variée me permet de m'adapter à différents profils et situations.",
+      "Après une certification en [votre diplôme], j'ai développé une méthodologie centrée sur l'écoute active et les techniques adaptatives. Mes consultations visent à créer un environnement propice à l'épanouissement personnel.",
+      "Praticien en [votre domaine] avec plusieurs années d'expérience, je combine savoir-faire traditionnel et innovations récentes. Mon objectif est de proposer un accompagnement sur mesure pour chaque individu.",
+      "Spécialiste dans mon domaine, je mets à profit mes compétences acquises grâce à [votre diplôme] pour offrir des solutions concrètes. Mes consultations s'adaptent aux besoins spécifiques de chaque patient.",
+    ];
+
+    const randomExample = examples[Math.floor(Math.random() * examples.length)];
+    let idx = 0;
+
+    if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
+
+    typingIntervalRef.current = setInterval(() => {
+      setDescription((prev) => {
+        if (idx >= randomExample.length) {
+          clearInterval(typingIntervalRef.current);
+          setIsTyping(false);
+          return prev;
+        }
+        const nextChar = randomExample.charAt(idx);
+        idx += 1;
+        return prev + nextChar;
+      });
+    }, 30);
+  };
+  
+
+  useEffect(() => {
+    return () => {
+      if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
+    };
+  }, []);
+
+
+// GESTION VALIDATION DES CHAMPS OBLIGATOIRES
+  const validateFields = async () => {
+    const newErrors = {};
+    if (!profilePic) newErrors.profilePic = "La photo de profil est requise.";
+
+    if (!civilite.trim()) newErrors.civilite = "La civilité est requise.";
+
+    if (!nom.trim()) newErrors.nom = "Le nom est requis.";
+
+    if (!prenom.trim()) newErrors.prenom = "Le prénom est requis.";
+
+    if (!dateNaissance.trim())newErrors.dateNaissance = "La date de naissance est requise.";
+
+    if (!email.trim()) newErrors.email = "L'email est requis.";
+
+    else if (!/^\S+@\S+\.\S+$/.test(email)) newErrors.email = "Le format de l'email est invalide.";
+
+    if (!mobile.trim()) newErrors.mobile = "Le numéro mobile est requis.";
+
+    if (!adresse.trim())newErrors.adresse = "L'adresse est requise.";
+
+    if (!codePostal.trim()) {
+      newErrors.codePostal = "Le code postal est requis.";
+    } else if (!/^\d{5}$/.test(codePostal)) {
+      newErrors.codePostal = "Code postal invalide (5 chiffres requis)";
+    }
+    // else if (!(await validateCodePostal(codePostal))) {
+    //   newErrors.codePostal = "Code postal non reconnu";
+    // }
+
+    if (!ville.trim()) newErrors.ville = "La ville est requise.";
+
+    if (!siret.trim()) {
+      newErrors.siret = "Le numéro de Siret est requis.";
+    } else if (siret.replace(/\s/g, "").length !== 14) {
+      newErrors.siret = "Le SIRET doit contenir exactement 14 chiffres";
+    }
+
+    if (!description.trim())newErrors.description = "La description est requise.";
+
+    if (consultationTypes.length === 0) newErrors.consultationTypes = "Veuillez sélectionner au moins un type de consultation.";
+    
+    if (patientTypeIds.length === 0) newErrors.patientTypes == "Veuillez sélectionner au moins un type de patient.";
+    
+    if (paymentMethodIds.length === 0)newErrors.paymentMethods = "Veuillez sélectionner au moins un moyen de paiement.";
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  const validateCodePostal = async (cp) => {
+    setLoadingCodePostal(true);
+    try {
+      const response = await axios.get(
+        `https://geo.api.gouv.fr/communes?codePostal=${cp}`
+      );
+      const valid = response.data.length > 0;
+      // setCodePostalValide(valid);
+      if (valid && response.data.length === 1) {
+        setVille(response.data[0].nom);
+      }
+      return valid;
+    } catch (error) {
+      console.error("Erreur validation code postal:", error);
+      return false;
+    } finally {
+      setLoadingCodePostal(false);
+    }
+  };
+  const validateAdresse = async (adresseSaisie, cp) => {
+    setLoadingAdresse(true);
+    try {
+      // 1) Appel limité au CP
+      const { data } = await axios.get(
+        `https://api-adresse.data.gouv.fr/search/`,
+        {
+          params: {
+            q: adresseSaisie,
+            postcode: cp,
+            limit: 1,
+          },
+        }
+      );
+
+      const features = data.features;
+      if (features && features.length > 0) {
+        const props = features[0].properties;
+
+        // 2) Vérification stricte du CP
+        if (props.postcode === cp) {
+          // 3) On remplit avec le libellé officiel
+          setAdresse(props.label);
+          setVille(props.city);
+          // setAdresseValide(true);
+          return true;
+        }
+      }
+
+      // Pas de résultat valide
+      setAdresseValide(false);
+      return false;
+    } catch (error) {
+      console.error("Erreur validation adresse :", error);
+      setAdresseValide(false);
+      return false;
+    } finally {
+      setLoadingAdresse(false);
+    }
+  };
+  
+
+// GESTION DES AUTRES CHANGEMENT OU ETAT : CHECKBOX, DROP PHOTO, DATE
+  const profilePicRef = useRef();
+  const handleModifyProfile = () => navigate("/profil");
+  const TODAY = new Date().toISOString().slice(0, 10);
+  const MIN_DATE = "1960-01-01";
+  const MAX_AGE_DATE = (() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 65);
+    return d.toISOString().slice(0, 10);
+  })();
+  const MAX_ADULT_DATE = (() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 18);
+    return d.toISOString().slice(0, 10);
+  })();
+
+  const handleToggle = (option, state, setState) => {
+    setState(
+      state.includes(option)
+        ? state.filter((item) => item !== option)
+        : [...state, option]
+    );
+  };
+  const handleChangePhoto = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProfilPhotoFile(file);
+      setProfilePic(URL.createObjectURL(file));
+    }
+  };
   const handleDrop = (e) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
@@ -387,7 +480,6 @@ const CompleteProfile = () => {
     }
   };
 
-  const profilePicRef = useRef();
   const getProfilePicSrc = () => {
     if (profilPhotoFile) {
       if (
@@ -405,26 +497,41 @@ const CompleteProfile = () => {
     return undefined;
   };
 
-  useEffect(() => {
-    if (!isTyping || !targetDescription) return;
+  const handleDateChange = (e) => {
+    setDateNaissance(e.target.value);
+    setErrors((prev) => ({ ...prev, dateNaissance: undefined })); // clear error
+  };
+  const validateDate = () => {
+    if (dateNaissance.length !== 10) return;
+    const sel = new Date(dateNaissance);
+    const min = new Date(MIN_DATE);
+    const maxAge = new Date(MAX_AGE_DATE);
+    const maxAdult = new Date(MAX_ADULT_DATE);
 
-    let idx = 0;
-    typingIntervalRef.current = setInterval(() => {
-      setDescription((prev) => prev + targetDescription[idx]);
-      idx += 1;
-      if (idx >= targetDescription.length) {
-        clearInterval(typingIntervalRef.current);
-        setIsTyping(false);
-      }
-    }, 50);
+    if (sel < min) {
+      setDateNaissance(MIN_DATE);
+      setErrors((prev) => ({
+        ...prev,
+        dateNaissance: "Date de naissance trop ancienne.",
+      }));
+    } else if (sel > maxAdult) {
+      setDateNaissance(MAX_ADULT_DATE);
+      setErrors((prev) => ({
+        ...prev,
+        dateNaissance: "Vous devez avoir au moins 18 ans.",
+      }));
+    } else if (sel < maxAge) {
+      setDateNaissance(MAX_AGE_DATE);
+      setErrors((prev) => ({
+        ...prev,
+        dateNaissance: "L'âge maximum est de 65 ans.",
+      }));
+    }
+  };
+  
 
-    return () => clearInterval(typingIntervalRef.current);
-  }, [isTyping, targetDescription]);
-
-  const handleDropZoneClick = () => fileInputRef.current?.click();
-  const handleDragOver = (e) => e.preventDefault();
-
-  const handleSubmit = async () => {
+// ENVOIE DU FORMULAIRE FINAL POUR ENREGISTREMENT DES MODIFICATIONS
+  const handleSubmitForm = async () => {
     const isValid = await validateFields();
 
     // if (!siretSuccess) {
@@ -505,160 +612,12 @@ const CompleteProfile = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      if (resp.data.success)
-        navigate("/profil", { state: { profileNow: getProfilePicSrc() } });
+      if (resp.data.success) navigate("/profil", { state: { profileNow: getProfilePicSrc() } });
     } catch (err) {
       console.error("Erreur soumission :", err);
       alert(err.response?.data?.message || "Erreur lors de la sauvegarde");
     } finally {
       setIsSubmitting(false);
-    }
-  };
-  const handleModifyProfile = () => navigate("/profil");
-  const generateExampleDescription = () => {
-    setIsTyping(true);
-    setDescription("");
-
-    const examples = [
-      "Professionnel de santé formé à [votre diplôme], j'accompagne mes patients avec une approche bienveillante et personnalisée. Mon expérience variée me permet de m'adapter à différents profils et situations.",
-      "Après une certification en [votre diplôme], j'ai développé une méthodologie centrée sur l'écoute active et les techniques adaptatives. Mes consultations visent à créer un environnement propice à l'épanouissement personnel.",
-      "Praticien en [votre domaine] avec plusieurs années d'expérience, je combine savoir-faire traditionnel et innovations récentes. Mon objectif est de proposer un accompagnement sur mesure pour chaque individu.",
-      "Spécialiste dans mon domaine, je mets à profit mes compétences acquises grâce à [votre diplôme] pour offrir des solutions concrètes. Mes consultations s'adaptent aux besoins spécifiques de chaque patient.",
-    ];
-
-    const randomExample = examples[Math.floor(Math.random() * examples.length)];
-    let idx = 0;
-
-    if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
-
-    typingIntervalRef.current = setInterval(() => {
-      setDescription((prev) => {
-        if (idx >= randomExample.length) {
-          clearInterval(typingIntervalRef.current);
-          setIsTyping(false);
-          return prev;
-        }
-        const nextChar = randomExample.charAt(idx);
-        idx += 1;
-        return prev + nextChar;
-      });
-    }, 30);
-  };
-
-  // Modifier le useEffect pour le nettoyage
-  useEffect(() => {
-    return () => {
-      if (typingIntervalRef.current) clearInterval(typingIntervalRef.current);
-    };
-  }, []);
-
-  const validateCodePostal = async (cp) => {
-    setLoadingCodePostal(true);
-    try {
-      const response = await axios.get(
-        `https://geo.api.gouv.fr/communes?codePostal=${cp}`
-      );
-      const valid = response.data.length > 0;
-      // setCodePostalValide(valid);
-      if (valid && response.data.length === 1) {
-        setVille(response.data[0].nom);
-      }
-      return valid;
-    } catch (error) {
-      console.error("Erreur validation code postal:", error);
-      return false;
-    } finally {
-      setLoadingCodePostal(false);
-    }
-  };
-
-  const validateAdresse = async (adresseSaisie, cp) => {
-    setLoadingAdresse(true);
-    try {
-      // 1) Appel limité au CP
-      const { data } = await axios.get(
-        `https://api-adresse.data.gouv.fr/search/`,
-        {
-          params: {
-            q: adresseSaisie,
-            postcode: cp,
-            limit: 1,
-          },
-        }
-      );
-
-      const features = data.features;
-      if (features && features.length > 0) {
-        const props = features[0].properties;
-
-        // 2) Vérification stricte du CP
-        if (props.postcode === cp) {
-          // 3) On remplit avec le libellé officiel
-          setAdresse(props.label);
-          setVille(props.city);
-          // setAdresseValide(true);
-          return true;
-        }
-      }
-
-      // Pas de résultat valide
-      setAdresseValide(false);
-      return false;
-    } catch (error) {
-      console.error("Erreur validation adresse :", error);
-      setAdresseValide(false);
-      return false;
-    } finally {
-      setLoadingAdresse(false);
-    }
-  };
-
-  // 1) Bornes
-  const MIN_DATE = "1960-01-01";
-  const TODAY = new Date().toISOString().slice(0, 10);
-  const MAX_AGE_DATE = (() => {
-    const d = new Date();
-    d.setFullYear(d.getFullYear() - 65);
-    return d.toISOString().slice(0, 10);
-  })();
-
-  const MAX_ADULT_DATE = (() => {
-    const d = new Date();
-    d.setFullYear(d.getFullYear() - 18);
-    return d.toISOString().slice(0, 10);
-  })();
-
-  // 2) Handlers
-  const handleDateChange = (e) => {
-    setDateNaissance(e.target.value);
-    setErrors((prev) => ({ ...prev, dateNaissance: undefined })); // clear error
-  };
-
-  const validateDate = () => {
-    if (dateNaissance.length !== 10) return;
-    const sel = new Date(dateNaissance);
-    const min = new Date(MIN_DATE);
-    const maxAge = new Date(MAX_AGE_DATE);
-    const maxAdult = new Date(MAX_ADULT_DATE);
-
-    if (sel < min) {
-      setDateNaissance(MIN_DATE);
-      setErrors((prev) => ({
-        ...prev,
-        dateNaissance: "Date de naissance trop ancienne.",
-      }));
-    } else if (sel > maxAdult) {
-      setDateNaissance(MAX_ADULT_DATE);
-      setErrors((prev) => ({
-        ...prev,
-        dateNaissance: "Vous devez avoir au moins 18 ans.",
-      }));
-    } else if (sel < maxAge) {
-      setDateNaissance(MAX_AGE_DATE);
-      setErrors((prev) => ({
-        ...prev,
-        dateNaissance: "L'âge maximum est de 65 ans.",
-      }));
     }
   };
 
@@ -1258,7 +1217,7 @@ const CompleteProfile = () => {
       {/* Bouton de sauvegarde */}
       <div className="flex justify-start p-6">
         <Button
-          onClick={handleSubmit}
+          onClick={handleSubmitForm}
           disabled={isSubmitting}
           className="flex items-center px-4 py-2 text-white text-xs font-medium rounded"
         >
