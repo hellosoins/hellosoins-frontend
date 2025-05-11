@@ -16,13 +16,6 @@ export const login_user = async (user_mail, mot_de_passe) => {
       password: mot_de_passe,
     });
 
-    // Sauvegarde du token et données utilisateur
-    if (response.data.token) {
-      localStorage.setItem('authToken', response.data.token);
-      localStorage.setItem('userData', JSON.stringify(response.data.user));
-      localStorage.setItem('tokenExpiration', jwtDecode(response.data.token).exp);
-    }
-
     return response.data;
   } catch (error) {
     // Gestion d'erreur améliorée
@@ -36,13 +29,6 @@ export const login_user = async (user_mail, mot_de_passe) => {
 export async function login_by_email(mail) {
   try {
     const response = await axios.post(`${API_URL}/auth/emailLogin`, { mail });
-    
-    // Si le login est immédiat (magic link déjà cliqué)
-    if (response.data.token) {
-      localStorage.setItem('authToken', response.data.token);
-      localStorage.setItem('userData', JSON.stringify(response.data.user));
-      localStorage.setItem('tokenExpiration', jwtDecode(response.data.token).exp);
-    }
 
     return response.data;
   } catch (error) {
@@ -133,3 +119,63 @@ export const register_user = async(requestData) => {
     throw errorMessage;
   }
 }
+
+// Envoi du code de validation
+export const sendValidationCode = async ({ mail, phone_number, name }) => {
+  try {
+    const payload = { mail, numero: phone_number };
+    if (name) payload.name = name;
+
+    const response = await axios.post(
+      `${API_URL}/validation/send-code`,
+      payload
+    );
+
+    return response.data;
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || error.message;
+    console.error('Erreur lors de l\'envoi du code :', errorMessage);
+    throw new Error(errorMessage);
+  }
+};
+
+// Vérification du code de validation
+export const verifyValidationCode = async ({ mail, code }) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/validation/verify-code`,
+      { mail, code }
+    );
+
+    return response.data;
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || error.message;
+    console.error('Erreur lors de la vérification du code :', errorMessage);
+    throw new Error(errorMessage);
+  }
+};
+
+
+// Récupération du numéro et du nom via l'email
+export const getNumberAndName = async (mail) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/auth/get-mobile`,
+      { mail }
+    );
+
+    if (!response.data.success) {
+      throw new Error('Échec de la récupération du mobile et du nom');
+    }
+
+    return {
+      mail: response.data.mail,
+      mobile_number: response.data.mobile_number,
+      name: response.data.name,
+    };
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || error.message;
+    console.error('Erreur lors de la récupération du mobile et du nom :', errorMessage);
+    throw new Error(errorMessage);
+  }
+};

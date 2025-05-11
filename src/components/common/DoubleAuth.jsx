@@ -1,49 +1,56 @@
 import { useRef, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/Button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Label } from "../ui/Label";
 import logo from "../../assets/hs2.svg";
+import { verifyValidationCode, sendValidationCode } from "@/services/api";
+import { setLocalData } from '@/services/common-services'
+const DoubleAuth = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { name, mail, numero, token } = location.state || {};
 
-const CodeVerification = ({ onVerify, userEmail, resendCode, phoneNumber }) => {
   const {
     register,
     handleSubmit,
     setValue,
     formState: { errors },
   } = useForm();
+  
   const inputRefs = useRef([]);
   const [isLoading, setIsLoading] = useState(false);
-  // State to manage resend cooldown (in seconds)
   const [resendTimer, setResendTimer] = useState(0);
+  const [errorMessage, setErrorMessage] = useState("");
 
+  // Configuration du viewport mobile
   useEffect(() => {
-    // Setup viewport for mobile
     const viewport = document.querySelector("meta[name=viewport]");
-    const contentValue =
-      "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no";
-    if (viewport) {
-      viewport.setAttribute("content", contentValue);
-    } else {
-      const meta = document.createElement("meta");
-      meta.name = "viewport";
-      meta.content = contentValue;
-      document.head.appendChild(meta);
-    }
+    const contentValue = "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no";
+    viewport?.setAttribute("content", contentValue);
   }, []);
 
-  // Countdown effect for resend timer
+
+function formatNumero(numero) {
+  // 1. On ne conserve que les chiffres
+  const digits = numero.replace(/\D/g, "");
+  
+  // 2. On prend les 9 derniers chiffres
+  const lastNine = digits.slice(-9);
+  
+  // 3. On préfixe d’un seul zéro
+  const masked = "0" + lastNine;
+  
+  // 4. On groupe par paires et on joint avec un espace
+  return masked.match(/.{1,2}/g)?.join(" ") ?? masked;
+}
+
+
+  // Gestion du timer pour le renvoi de code
   useEffect(() => {
     let interval;
     if (resendTimer > 0) {
       interval = setInterval(() => {
-        setResendTimer((prev) => {
-          if (prev <= 1) {
-            clearInterval(interval);
-            return 0;
-          }
-          return prev - 1;
-        });
+        setResendTimer((prev) => (prev > 0 ? prev - 1 : 0));
       }, 1000);
     }
     return () => clearInterval(interval);
@@ -52,10 +59,38 @@ const CodeVerification = ({ onVerify, userEmail, resendCode, phoneNumber }) => {
   const onSubmit = async (data) => {
     try {
       setIsLoading(true);
+      setErrorMessage("");
       const code = Object.values(data).join('');
-      await onVerify(code);
+      
+      await verifyValidationCode({ 
+        mail: mail, 
+        code 
+      });
+      
+      console.log("voici : "+token)
+      localStorage.setItem('authToken', token);
+      
+      navigate('/praticien/premierpas');
     } catch (error) {
-      console.error("Échec de la vérification:", error);
+      setErrorMessage(error.message || "Code invalide ou erreur de vérification");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (resendTimer > 0) return;
+    
+    try {
+      setIsLoading(true);
+      await sendValidationCode({ 
+        mail, 
+        phone_number: numero, 
+        name 
+      });
+      setResendTimer(600); // 10 minutes
+    } catch (error) {
+      setErrorMessage("Échec du renvoi du code - " + error.message);
     } finally {
       setIsLoading(false);
     }
@@ -86,47 +121,12 @@ const CodeVerification = ({ onVerify, userEmail, resendCode, phoneNumber }) => {
     }
   };
 
-  // Handle resend click
-  const handleResend = async () => {
-    if (resendTimer > 0) return;
-    try {
-      setIsLoading(true);
-      await resendCode(userEmail);
-      // Start 10-minute (600s) cooldown
-      setResendTimer(600);
-    } catch (error) {
-      console.error("Erreur lors du renvoi du code:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Format timer as MM:SS
-  const formatTimer = (seconds) => {
-    const m = String(Math.floor(seconds / 60)).padStart(2, '0');
-    const s = String(seconds % 60).padStart(2, '0');
-    return `${m}:${s}`;
-  };
-
-  function formatNumero(numero) {
-  // 1. On ne conserve que les chiffres
-  const digits = numero.replace(/\D/g, "");
-  
-  // 2. On prend les 9 derniers chiffres
-  const lastNine = digits.slice(-9);
-  
-  // 3. On préfixe d’un seul zéro
-  const masked = "0" + lastNine;
-  
-  // 4. On groupe par paires et on joint avec un espace
-  return masked.match(/.{1,2}/g)?.join(" ") ?? masked;
-}
-
   return (
     <div className="flex flex-col items-center justify-center min-h-screen">
       <div className="fixed top-0 w-full flex items-center justify-start bg-white z-50">
-        <img src={logo} className="mt-2 px-4 w-[130px] h-[40px]" />
+        <img src={logo} className="mt-2 px-4 w-[130px] h-[40px]" alt="Logo" />
       </div>
+      
       <div className="w-full max-w-md bg-white flex justify-center items-center flex-col rounded-md px-6 pt-4">
         <div className="text-center mb-4 w-full flex justify-center items-center">
           <div className="text-md mt-4 font-bold text-gray-900 mb-8">
@@ -136,13 +136,17 @@ const CodeVerification = ({ onVerify, userEmail, resendCode, phoneNumber }) => {
         <div className="text-sm mt-4 text-center font-medium text-gray-500 my-8 w-full">
           <p className="flex flex-col items-center justify-center gap-4 w-full">
             Un code de validation vous a été envoyé à l'adresse e-mail
-            <span className="text-gray-500"> <span className="underline text-[#5DA781]"> {userEmail} </span>  et au numéro <span className="underline text-[#5DA781]">{formatNumero(phoneNumber)}</span></span> 
+            <span className="text-gray-500"> <span className="underline text-[#5DA781]"> {mail} </span>  et au numéro <span className="underline text-[#5DA781]"> {formatNumero(numero)}</span></span> 
             <span>Saisissez le code ci-dessous pour valider votre compte</span>
           </p>
         </div>
-        <div className="w-full flex justify-center items-center">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div
+
+        {errorMessage && (
+          <div className="text-red-500 text-sm mb-4">{errorMessage}</div>
+        )}
+
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full">
+          <div
               className="flex space-x-2 justify-center"
               onPaste={handlePaste}
             >
@@ -174,35 +178,31 @@ const CodeVerification = ({ onVerify, userEmail, resendCode, phoneNumber }) => {
                 );
               })}
             </div>
-            {(errors.code1 || errors.code2 || errors.code3 || errors.code4 || errors.code5 || errors.code6) && (
-              <p className="text-red-500 text-xs text-center">
-                Chaque case doit contenir un chiffre valide.
-              </p>
-            )}
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={handleResend}
-                className="underline text-xs text-gray-600 mb-4"
-                disabled={isLoading || resendTimer > 0}
-              >
-                {resendTimer > 0
-                  ? `Renvoi possible dans ${formatTimer(resendTimer)}`
-                  : "Renvoi du code"}
-              </button>
-            </div>
-            <Button
-              type="submit"
-              className="w-full bg-helloBlue hover:bg-helloBlue/90 text-white rounded-full"
-              disabled={isLoading}
+          
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={handleResend}
+              className="underline text-xs text-gray-600 my-8"
+              disabled={isLoading || resendTimer > 0}
             >
-              {isLoading ? "...chargement" : "Valider le compte"}
-            </Button>
-          </form>
-        </div>
+              {resendTimer > 0 
+                ? `Nouvel envoi possible dans ${Math.floor(resendTimer/60)}:${resendTimer%60 < 10 ? '0' : ''}${resendTimer%60}`
+                : "Renvoyer le code"}
+            </button>
+          </div>
+
+          <Button
+            type="submit"
+            className="w-full bg-helloBlue hover:bg-helloBlue/90 text-white rounded-full"
+            disabled={isLoading}
+          >
+            {isLoading ? "Vérification..." : "Valider le compte"}
+          </Button>
+        </form>
       </div>
     </div>
   );
 };
 
-export default CodeVerification;
+export default DoubleAuth;

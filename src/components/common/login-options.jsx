@@ -13,16 +13,19 @@ import {
 } from "@/components/ui/Dialog";
 import Logo from './icone/googleIcon.png';
 
-import { login_by_email } from '@/services/api';
-import { setLocalData } from '@/services/common-services';
+import { login_by_email, getNumberAndName, sendValidationCode } from '@/services/api';
 import { useNavigate } from 'react-router-dom';
 
 const LoginOptions = () => {
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
-  // Nouveaux états pour le dialogue de succès
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
-  const [userEmail, setUserEmail] = useState('');
+  const [userDetails, setUserDetails] = useState({
+    name: '',
+    phoneNumber: '',
+    email: '',
+    token: ''
+  });
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -34,11 +37,15 @@ const LoginOptions = () => {
         const email = profile.email;
 
         const result = await login_by_email(email);
-        await setLocalData('token', result.token);
-        await setLocalData('user', JSON.stringify(result.user));
+        
 
-        // Afficher le dialogue de succès au lieu de rediriger directement
-        setUserEmail(result.user.email || email);
+        const userInfo = await getNumberAndName(email);
+        setUserDetails({
+          name: userInfo.name,
+          phoneNumber: userInfo.mobile_number,
+          email: userInfo.mail,
+          token: result.token
+        });
         setSuccessDialogOpen(true);
       } catch (err) {
         console.error('Erreur login sans mot de passe :', err);
@@ -52,28 +59,51 @@ const LoginOptions = () => {
 
   return (
     <>
-       <Dialog
+      <Dialog
         open={successDialogOpen}
-        onOpenChange={(open) => {
-          setSuccessDialogOpen(open);
-          if (!open) navigate('/praticien/premierPas');
-        }}
+        onOpenChange={setSuccessDialogOpen}
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Bienvenue {userEmail}</DialogTitle>
+            <DialogTitle>Bienvenue {userDetails.email}</DialogTitle>
             <DialogDescription className="text-xs">
               Vous êtes connecté avec succès via Google.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <DialogClose asChild>
-              <Button className="text-xs bg-green-600 rounded">Continuer</Button>
+              <Button 
+                className="text-xs bg-green-600 rounded"
+                onClick={async () => {
+                  try {
+                    await sendValidationCode({
+                      mail: userDetails.email,
+                      phone_number: userDetails.phoneNumber,
+                      name: userDetails.name
+                      
+                    });
+                    navigate('/code', {
+                      state: {
+                        name: userDetails.name,
+                        mail: userDetails.email,
+                        numero: userDetails.phoneNumber,
+                        token : userDetails.token
+                      }
+                    });
+                  } catch (error) {
+                    console.error('Échec de l\'envoi du code:', error);
+                    setDialogOpen(true);
+                  }
+                }}
+              >
+                Continuer
+              </Button>
             </DialogClose>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
+     
       {/* Dialogue d'erreur existant */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
@@ -91,6 +121,7 @@ const LoginOptions = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Rest of the component remains unchanged */}
       <div className="grid grid-cols-1 gap-4">
         <Button
           variant="outline"
@@ -106,7 +137,6 @@ const LoginOptions = () => {
           Ou
         </span>
       </div>
-
     </>
   );
 };
