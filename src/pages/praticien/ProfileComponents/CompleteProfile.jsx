@@ -185,6 +185,7 @@ const CompleteProfile = () => {
     ];
     const filled = fields.reduce((acc, cur) => acc + cur, 0);
     setProgress(Math.round((filled / MANDATORY_FIELDS) * 100));
+    validateFields();
   }, [
     profilePic,
     civilite,
@@ -233,6 +234,7 @@ const CompleteProfile = () => {
           },
         }
       );
+      console.log(response.data.etablissement);
       if (response.data.etablissement) {
         const etablissement = response.data.etablissement;
         const addressParts = [
@@ -373,7 +375,7 @@ const CompleteProfile = () => {
 
     if (consultationTypes.length === 0) newErrors.consultationTypes = "Veuillez sélectionner au moins un type de consultation.";
     
-    if (patientTypeIds.length === 0) newErrors.patientTypes == "Veuillez sélectionner au moins un type de patient.";
+    if (patientTypeIds.length === 0) newErrors.patientTypes = "Veuillez sélectionner au moins un type de patient.";
     
     if (paymentMethodIds.length === 0)newErrors.paymentMethods = "Veuillez sélectionner au moins un moyen de paiement.";
     
@@ -533,6 +535,7 @@ const CompleteProfile = () => {
 // ENVOIE DU FORMULAIRE FINAL POUR ENREGISTREMENT DES MODIFICATIONS
   const handleSubmitForm = async () => {
     const isValid = await validateFields();
+    if(isValid == false)return; // Verification de toute les champs
 
     // if (!siretSuccess) {
     //   const confirmVerification = window.confirm(
@@ -791,6 +794,7 @@ const CompleteProfile = () => {
             )}
           </div>
 
+          {/* Date de naissance */}
           <div>
             <label className="block text-xs font-medium text-gray-700">
               Date de naissance <span className="text-red-700">*</span>
@@ -909,7 +913,9 @@ const CompleteProfile = () => {
             {siretError && (
               <p className="text-red-600 text-xs mt-1">{siretError}</p>
             )}
-            {siretSuccess && siretDisplayDetails && (
+            { siretError 
+            ? (<></>)
+            : siretSuccess && siretDisplayDetails && (
               <div className="text-green-600 text-xs mt-1 space-y-1">
                 <p>✓ SIRET validé</p>
                 <p>
