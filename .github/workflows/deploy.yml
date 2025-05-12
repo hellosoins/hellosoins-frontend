@@ -35,10 +35,11 @@ jobs:
             echo "→ Aller dans le dossier frontend"
             cd ~/apps/hellosoins/frontend/${BRANCH_NAME}
 
-            echo "→ Pull du code"
-            git pull origin ${BRANCH_NAME}
+            echo "→ Reset local branch pour éviter les conflits"
+            git fetch origin
+            git reset --hard origin/${BRANCH_NAME}
 
-            echo "→ Création du fichier .env"
+            echo "→ Création du fichier .env (non suivi par git)"
             echo "VITE_API_BASE_URL=${API_URL}" > .env
 
             echo "→ Reconstruction des conteneurs Docker"
