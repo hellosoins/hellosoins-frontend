@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { ChevronLeft, ChevronRight, ChevronDown, Settings, MapPinHouse, List } from 'lucide-react';
 import {
   format,

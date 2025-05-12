@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { Edit, PlusCircle, Trash2, ChevronDown, ChevronUp, ArrowLeft, InfoIcon } from 'lucide-react';
 import EditTarif from './EditTarif';
 import Badge from './NATUROPATHIE.png'
