@@ -204,6 +204,13 @@ const CompleteProfile = () => {
     paymentMethodIds,
   ]);
 
+  //gestion code postal
+  // Ajouter en haut du composant
+  useEffect(() => {
+    if (codePostal.length === 5 && !ville) {
+      validateCodePostal(codePostal);
+    }
+  }, [codePostal, ville]); // Déclencher quand le code postal change
 
 // GESTION NUMERO-DE-SIRET
   useEffect(() => {
@@ -211,6 +218,7 @@ const CompleteProfile = () => {
     setSiretError("");
     handleVerifySiret();
   }, [siret]);
+
   const handleVerifySiret = async () => {
     const cleanedSiret = siret.replace(/\s/g, "");
 
@@ -244,8 +252,8 @@ const CompleteProfile = () => {
         ].filter(Boolean).join(" ");
 
         setAdresse(addressParts);
-        setCodePostal(etablissement.code_postal || "");
-        setVille(etablissement.libelle_commune || "");
+        // setCodePostal(etablissement.code_postal || "");
+        // setVille(etablissement.libelle_commune || "");
         setSiretSuccess(true);
         // setSiretDetails(etablissement);
         setSiretDisplayDetails(etablissement);
@@ -382,65 +390,54 @@ const CompleteProfile = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  
   const validateCodePostal = async (cp) => {
-    setLoadingCodePostal(true);
-    try {
-      const response = await axios.get(
-        `https://geo.api.gouv.fr/communes?codePostal=${cp}`
-      );
-      const valid = response.data.length > 0;
-      // setCodePostalValide(valid);
-      if (valid && response.data.length === 1) {
-        setVille(response.data[0].nom);
-      }
-      return valid;
-    } catch (error) {
-      console.error("Erreur validation code postal:", error);
-      return false;
-    } finally {
-      setLoadingCodePostal(false);
+  setLoadingCodePostal(true);
+  try {
+    const response = await axios.get(`https://geo.api.gouv.fr/communes?codePostal=${cp}`);
+    const valid = response.data.length > 0;
+    
+    if (valid) {
+      // Prendre la première commune trouvée
+      setVille(response.data[0].nom);
     }
-  };
+    
+    return valid;
+  } catch (error) {
+    console.error("Erreur validation code postal:", error);
+    return false;
+  } finally {
+    setLoadingCodePostal(false);
+  }
+};
   const validateAdresse = async (adresseSaisie, cp) => {
-    setLoadingAdresse(true);
-    try {
-      // 1) Appel limité au CP
-      const { data } = await axios.get(
-        `https://api-adresse.data.gouv.fr/search/`,
-        {
-          params: {
-            q: adresseSaisie,
-            postcode: cp,
-            limit: 1,
-          },
-        }
-      );
-
-      const features = data.features;
-      if (features && features.length > 0) {
-        const props = features[0].properties;
-
-        // 2) Vérification stricte du CP
-        if (props.postcode === cp) {
-          // 3) On remplit avec le libellé officiel
-          setAdresse(props.label);
-          setVille(props.city);
-          // setAdresseValide(true);
-          return true;
-        }
+  setLoadingAdresse(true);
+  try {
+    const { data } = await axios.get(`https://api-adresse.data.gouv.fr/search/`, {
+      params: {
+        q: adresseSaisie,
+        postcode: cp,
+        autocomplete: 0,
+        limit: 1
       }
+    });
 
-      // Pas de résultat valide
-      setAdresseValide(false);
-      return false;
-    } catch (error) {
-      console.error("Erreur validation adresse :", error);
-      setAdresseValide(false);
-      return false;
-    } finally {
-      setLoadingAdresse(false);
+    if (data.features?.length > 0) {
+      const props = data.features[0].properties;
+      // Mettre à jour l'adresse formatée ET la ville
+      setAdresse(props.name);
+      setVille(props.city);
+      setCodePostal(props.postcode);
+      return true;
     }
-  };
+    return false;
+  } catch (error) {
+    console.error("Erreur validation adresse :", error);
+    return false;
+  } finally {
+    setLoadingAdresse(false);
+  }
+};
   
 
 // GESTION DES AUTRES CHANGEMENT OU ETAT : CHECKBOX, DROP PHOTO, DATE
@@ -974,9 +971,13 @@ const CompleteProfile = () => {
                 <input
                   type="text"
                   value={codePostal}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\D/g, "").slice(0, 5);
+                  onChange={async (e) => {
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 5);
                     setCodePostal(value);
+                    
+                    if (value.length === 5) {
+                      await validateCodePostal(value); // Déclencher la validation immédiate
+                    }
                   }}
                   placeholder="75001"
                   className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
@@ -1001,11 +1002,12 @@ const CompleteProfile = () => {
               <input
                 type="text"
                 value={ville}
-                onChange={(e) => setVille(e.target.value)}
+                onChange={e => setVille(e.target.value)}
                 placeholder="Versailles"
                 className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
                   errors.ville ? "border-red-500" : "border-gray-300"
                 }`}
+                disabled={loadingCodePostal} // Désactiver pendant le chargement
               />
               {errors.ville && (
                 <p className="text-red-600 text-xs">{errors.ville}</p>
