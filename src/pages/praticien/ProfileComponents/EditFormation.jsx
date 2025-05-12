@@ -32,13 +32,14 @@ const Dropdown = ({ options, selected, onChange, placeholder }) => {
         >
           <Listbox.Options className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md max-h-48 overflow-auto text-xs shadow-lg">
             <div className="sticky top-0 p-2 bg-white border-b">
-              <input
-                type="text"
+              {/* <input
+                type="number"
                 placeholder="Rechercher une année..."
                 value={search}
+                maxLength={4}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full px-2 py-1 text-xs border rounded focus:ring-1 focus:ring-green-500"
-              />
+              /> */}
             </div>
             {filteredOptions.map(option => (
               <Listbox.Option
@@ -255,41 +256,35 @@ const EditFormation = ({ onBack, onSave, initialFormation }) => {
     staleTime: 600000,
   });
 
-  // Fonction pour ajouter une nouvelle spécialité
   const handleAddSpeciality = async () => {
-    if (!newSpeciality.trim()) {
-      setNewSpecialityError('Veuillez entrer le nom de la spécialité.');
-      return;
-    }
+  if (!newSpeciality.trim()) {
+    setNewSpecialityError('Veuillez entrer le nom de la spécialité.');
+    return;
+  }
+
+  setIsAddingSpeciality(true);
+  try {
+    const response = await fetch(`${API_URL}/specs/addSpeciality`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ designation: newSpeciality }),
+    });
     
-    setIsAddingSpeciality(true);
-    try {
-      const response = await fetch(`${API_URL}/specs/addSpeciality`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ designation: newSpeciality }),
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) throw new Error(data.message || 'Erreur lors de la création');
-      
-      // Rafraîchir la liste des spécialités
-      await queryClient.invalidateQueries('specialities');
-      // Sélectionner la nouvelle spécialité
-      setSpecialite(data.data.id_speciality);
-      // Réinitialiser le formulaire
-      setIsNewSpeciality(false);
-      setNewSpeciality('');
-    } catch (error) {
-      console.error('Erreur:', error);
-      setNewSpecialityError(error.message);
-    } finally {
-      setIsAddingSpeciality(false);
-    }
-  };
+    const data = await response.json();
+    
+    if (!response.ok) throw new Error(data.message || 'Erreur lors de la création');
+    
+    await queryClient.invalidateQueries('specialities');
+    // Ajout de la nouvelle spécialité à la liste sélectionnée
+    setSpecialites(prev => [...prev, data.data.id_speciality]); // Modifié ici
+    setIsNewSpeciality(false);
+    setNewSpeciality('');
+  } catch (error) {
+    setNewSpecialityError(error.message);
+  } finally {
+    setIsAddingSpeciality(false);
+  }
+};
 
 
   const specOptions = allSpecs.map(s => ({ value: s.id_speciality, label: s.designation }));
@@ -315,12 +310,43 @@ const EditFormation = ({ onBack, onSave, initialFormation }) => {
     }
   }, [initialFormation]);
 
+  useEffect(() => {
+  if (annee && errors.annee) {
+    setErrors(prev => ({ ...prev, annee: undefined }));
+  }
+}, [annee, errors.annee]);
+
+useEffect(() => {
+  if (diplome && errors.diplome) {
+    setErrors(prev => ({ ...prev, diplome: undefined }));
+  }
+}, [diplome, errors.diplome]);
+
+useEffect(() => {
+  if (specialites.length > 0 && errors.specialites) {
+    setErrors(prev => ({ ...prev, specialites: undefined }));
+  }
+}, [specialites, errors.specialites]);
+
+useEffect(() => {
+  if (etablissement && errors.etablissement) {
+    setErrors(prev => ({ ...prev, etablissement: undefined }));
+  }
+}, [etablissement, errors.etablissement]);
+
+useEffect(() => {
+  if (files.length > 0 && errors.files) {
+    setErrors(prev => ({ ...prev, files: undefined }));
+  }
+}, [files, errors.files]);
+
   const validate = () => {
     const newErrors = {};
     if (!annee) newErrors.annee = "L'année est requise.";
     if (!diplome) newErrors.diplome = "Le diplôme est requis.";
-    if (specialites.length === 0) newErrors.specialites = "La spécialité est requise.";
+    if (specialites.length === 0) newErrors.specialites = "La spécialité est requise."; // Modifié ici
     if (!etablissement) newErrors.etablissement = "L'établissement est requis.";
+    if (files.length === 0) newErrors.files = "Au moins un fichier doit être téléchargé."; // Nouvelle validation
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -406,12 +432,14 @@ const handleRemoveFile = (indexToRemove) => {
           <ArrowLeftCircle /> Retour
         </Button>
       </div>
-      <div className="flex items-center justify-start pb-4 mt-4 border-b-2">
+      <div className='flex w-full items-center justify-center'>
+        <div className='w-full md:w-3/4'>
+        <div className="flex items-center justify-start pb-4 mt-4 border-b-2">
         <span className="text-sm font-semibold">Formation</span>
       </div>
       <div className="mt-4 space-y-4">
         {/* Année */}
-        <div className="w-full md:w-1/2">
+        <div className="w-full md:w-full">
           <label className="block mb-1 text-xs font-medium text-gray-700">
             Année <span className="text-red-700">*</span>
           </label>
@@ -420,13 +448,13 @@ const handleRemoveFile = (indexToRemove) => {
             selected={annee}
             onChange={setAnnee}
             placeholder="-- Sélectionner une année --"
-            className=" text-gray-700"
+            className="text-gray-700"
           />
           {errors.annee && <p className="text-red-500 text-xs mt-1">{errors.annee}</p>}
         </div>
 
         {/* Diplôme */}
-        <div className="w-full md:w-1/2">
+        <div className="w-full md:w-full">
           <label className="block mb-1 text-xs font-medium text-gray-700">
             Diplôme <span className="text-red-700">*</span>
           </label>
@@ -442,7 +470,7 @@ const handleRemoveFile = (indexToRemove) => {
 
         {/* Spécialité */}
         {/* Section Spécialité modifiée */}
-      <div className="w-full md:w-1/2">
+      <div className="w-full md:w-full">
         <label className="flex items-center justify-between mb-1 text-xs font-medium text-gray-700">
          <span className='flex items-center justify-start'> Spécialité <span className="text-red-700">*</span></span>
           <label className="ml-2 inline-flex items-center">
@@ -494,12 +522,10 @@ const handleRemoveFile = (indexToRemove) => {
             placeholder="-- Choisir une ou plusieurs spécialités --"
           />
         )}
-        {!isNewSpeciality && errors.specialite && (
-          <p className="text-red-500 text-xs mt-1">{errors.specialite}</p>
-        )}
+         {errors.specialites && <p className="text-red-500 text-xs mt-1">{errors.specialites}</p>}
       </div>
         {/* Champ Établissement avec autocomplétion */}
-        <div className="w-full md:w-1/2 mt-2 relative">
+        <div className="w-full md:w-full mt-2 relative">
           <label className="block mb-1 text-xs font-medium text-gray-700">
             Établissement <span className='text-red-700'>*</span>
           </label>
@@ -529,24 +555,25 @@ const handleRemoveFile = (indexToRemove) => {
         </div>
         {/* Pièces justificatives */}
         <div className="mt-3 mb-2 relative">
-  <label className="block mb-1 text-xs font-medium text-gray-700">
-    Télécharger une ou plusieurs pièces justificatives
+    <label className="block mb-1 text-xs font-medium text-gray-700">
+    Télécharger une ou plusieurs pièces justificatives <span className="text-red-700">*</span>
   </label>
 
   <div className="relative">
-  <input
+    <input
       type="file"
       accept=".svg,.png,.jpg,.jpeg,.gif,.pdf"
       multiple
       onChange={handleFileChange}
       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
     />
-
-
-    {/* Zone visuelle cliquable */}
-    <div className="flex flex-col items-center justify-center p-4 border-2 border-[#5DA781] border-dashed rounded-md w-full">
+    
+    {/* Modification du style pour inclure la bordure rouge en cas d'erreur */}
+    <div className={`flex flex-col items-center justify-center p-4 border-2 ${
+      errors.files ? 'border-red-500' : 'border-[#5DA781]'
+    } border-dashed rounded-md w-full`}>
       <svg
-        className="w-5 h-5 mb-2 text-[#5DA781]"
+        className={`w-5 h-5 mb-2 ${errors.files ? 'text-red-500' : 'text-[#5DA781]'}`}
         fill="none"
         stroke="currentColor"
         strokeWidth={1.5}
@@ -558,12 +585,18 @@ const handleRemoveFile = (indexToRemove) => {
           d="M3 16.5V7.125A2.625 2.625 0 015.625 4.5h12.75A2.625 2.625 0 0121 7.125V16.5M3 16.5l3.75-3.75M21 16.5l-3.75-3.75M8.25 8.25h7.5M12 8.25v7.5"
         />
       </svg>
-      <p className="text-xs text-[#5DA781]">Cliquer pour ajouter ou glisser-déposer</p>
-      <p className="mt-1 text-xs text-[#5DA781]">
+      <p className={`text-xs ${errors.files ? 'text-red-500' : 'text-[#5DA781]'}`}>
+        Cliquer pour ajouter ou glisser-déposer
+      </p>
+      <p className={`mt-1 text-xs ${errors.files ? 'text-red-500' : 'text-[#5DA781]'}`}>
         SVG, PNG, JPG, GIF ou PDF
       </p>
     </div>
   </div>
+
+  {errors.files && (
+    <p className="text-red-500 text-xs mt-1">{errors.files}</p>
+  )}
 
   {/* Affichage des fichiers sélectionnés */}
    {/* Nouvel affichage des fichiers avec suppression */}
@@ -600,10 +633,10 @@ const handleRemoveFile = (indexToRemove) => {
   )}
 </div>
       </div>
-      <div className="flex items-center justify-start w-full mt-4 space-x-2">
-        <Button onClick={onBack} className="text-xs bg-red-700 rounded shadow-none">
-          Annuler
-        </Button>
+      </div>
+      </div>
+      <div className="flex items-center justify-start w-full mt-4 space-x-2 border-t-2 pt-4">
+      
   <Button 
     onClick={handleSave} 
     className="text-xs rounded shadow-none"
@@ -621,6 +654,9 @@ const handleRemoveFile = (indexToRemove) => {
       </>
     )}
   </Button>
+    <Button onClick={onBack} className="text-xs bg-red-700 rounded shadow-none">
+          Annuler
+        </Button>
       </div>
     </div>
   );
