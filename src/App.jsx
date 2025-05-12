@@ -21,7 +21,7 @@ import EditFormation from './pages/praticien/ProfileComponents/EditFormation';
 import TroubleConfig from './pages/praticien/ProfileComponents/TroubleConfig';
 import PremierPas from './pages/praticien/PremierPas';
 import Agendav2 from './pages/praticien/Agenda';
-import DoubleAuth from './components/common/Doubleauth';
+import DoubleAuth from './components/common/DoubleAuth';
 
 function App() {
   const location = useLocation();
