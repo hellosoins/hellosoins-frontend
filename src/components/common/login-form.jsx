@@ -40,29 +40,21 @@ export const LoginForm = ({ className, ...props }) => {
     setMessage('')
 
     try {
-      // Authentification classique
       const response = await login_user(data.user_mail, data.mot_de_passe)
-
- 
-
-      // Récupération des infos supplémentaires
       const userInfo = await getNumberAndName(response.user.mail)
-      
-      // Préparation des données pour le code
+
       const details = {
         name: userInfo.name,
         mail: response.user.mail,
         numero: userInfo.mobile_number,
         token: response.token
       }
-      
-      // Envoi du code de validation
+
       await sendValidationCode(details)
-      
-      // Stockage des données pour la navigation
-      setUserDetails(details)
-      navigate('/code', { state: userDetails })
-      
+
+      // 👉 on passe directement `details` à navigate
+      navigate('/code', { state: details })
+
     } catch (error) {
       setMessage(error.message || 'Une erreur est survenue')
       setDialogOpen(true)
@@ -70,7 +62,6 @@ export const LoginForm = ({ className, ...props }) => {
       setLoading(false)
     }
   }
-
    useEffect(() => {
     const viewport = document.querySelector("meta[name=viewport]")
     const contentValue =
