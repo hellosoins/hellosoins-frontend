@@ -22,7 +22,7 @@ import {
 import { useLocation, Link } from "react-router-dom";
 import {  ChevronRight } from "lucide-react";
 
-import { menu_principale, menu_secondaire } from "./constant";
+import { menu_principale, menu_secondaire, menu_secondaire2 } from "./constant";
 import AppSidebarHeader from "./app-sidebar-header";
 import { DropdownMenuSeparator } from "../ui/Dropdown-menu";
 
@@ -60,9 +60,53 @@ const AppSidebar = () => {
         <DropdownMenuSeparator />
         {/* Menu secondaire  */}
         <SidebarGroup>
-          <SidebarGroupLabel>Parametrages</SidebarGroupLabel>
           <SidebarMenu>
             {menu_secondaire.map((item) => (
+              <Collapsible
+                key={item.title}
+                asChild
+                defaultOpen={item.isActive}
+                className="group/collapsible"
+              >
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton tooltip={item.title}>
+                      {item.icon && <item.icon />}
+                      <span>{item.title}</span>
+                      <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      {item.items?.map((subItem) => (
+                        <SidebarMenuSubItem key={subItem.title}>
+                          <SidebarMenuSubButton asChild>
+                            <Link
+                              to={subItem.url}
+                              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition hover:text-green-400 active:text-helloSoin  ${
+                                location.pathname === subItem.url
+                                  ? "text-helloSoin bg-gray-100"
+                                  : "text-gray-700"
+                              }`}
+                            >
+                              <subItem.icon />
+                               <span>{subItem.title}</span>
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
+
+        {/* Menu secondaire  */}
+        <SidebarGroup>
+          <SidebarMenu>
+            {menu_secondaire2.map((item) => (
               <Collapsible
                 key={item.title}
                 asChild

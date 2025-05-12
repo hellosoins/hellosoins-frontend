@@ -217,7 +217,11 @@ const Cabinets = () => {
               </form>
       ) : (
         <div className="flex flex-col space-y-4">
-          <div className="flex items-center justify-end">
+          <div className="flex items-center justify-between">
+           <p className="text-orange-700">
+  🚧 ( À rendre fonctionnel )
+</p>
+
             <Button
               variant="default"
               size="sm"

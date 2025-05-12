@@ -43,6 +43,8 @@ const groupFormations = (list) => {
 };
 
 
+
+
 const Dropdown = ({ options, selected, onChange, placeholder }) => (
   <Listbox value={selected} onChange={onChange}>
     <div className="relative bg-white z-50">
@@ -77,8 +79,38 @@ const Dropdown = ({ options, selected, onChange, placeholder }) => (
   </Listbox>
 );
 
+// Composant Dialog de confirmation
+const DeleteConfirmationDialog = ({ isOpen, onCancel, onConfirm, message }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg p-4 max-w-sm w-full">
+        <p className="mb-4 text-sm">{message}</p>
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={onCancel}
+            className="px-4 py-2 text-gray-700 bg-gray-100 rounded hover:bg-gray-200 text-xs"
+          >
+            Annuler
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 text-xs"
+          >
+            Confirmer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Formation = () => {
   const queryClient = useQueryClient();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogAction, setDialogAction] = useState(null);
+  const [dialogMessage, setDialogMessage] = useState('');
+  const [expandedGroupKeys, setExpandedGroupKeys] = useState([]);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editingFormation, setEditingFormation] = useState(null);
@@ -213,11 +245,7 @@ const Formation = () => {
     setIsEditing(true);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm('Êtes-vous sûr de vouloir supprimer cette formation ?')) {
-      deleteMutation.mutate(id);
-    }
-  };
+
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
@@ -234,10 +262,6 @@ const Formation = () => {
     }
   });
 
-  const handleDeleteGroup = (entries) => {
-    if (!window.confirm('Êtes-vous sûr de vouloir supprimer toutes ces formations ?')) return;
-    entries.forEach(f => deleteMutation.mutate(f.id_formation));
-  };
 
   const handleAdd = () => {
     setEditingFormation(null);
@@ -253,11 +277,31 @@ const Formation = () => {
     setEditingFormation(null);
   };
 
-  const toggleExpand = (id) => {
-    setExpandedFormationIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+
+    const toggleExpand = (key) => {
+    setExpandedGroupKeys(prev =>
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
     );
   };
+
+  const handleDelete = (id) => {
+    setDialogMessage('Êtes-vous sûr de vouloir supprimer cette formation ?');
+    setDialogAction(() => () => {
+      deleteMutation.mutate(id);
+      setIsDialogOpen(false);
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleDeleteGroup = (entries) => {
+    setDialogMessage('Êtes-vous sûr de vouloir supprimer toutes ces formations ?');
+    setDialogAction(() => () => {
+      entries.forEach(f => deleteMutation.mutate(f.id_formation));
+      setIsDialogOpen(false);
+    });
+    setIsDialogOpen(true);
+  };
+
 
   const months = [
     { value: '01', label: 'Janvier' },
@@ -291,6 +335,12 @@ const Formation = () => {
 
   return (
     <div className="mb-4 space-y-4 px-2">
+      <DeleteConfirmationDialog
+        isOpen={isDialogOpen}
+        onCancel={() => setIsDialogOpen(false)}
+        onConfirm={dialogAction}
+        message={dialogMessage}
+      />
     {isEditing ? (
       <EditFormation
         onBack={handleBack}
@@ -356,7 +406,7 @@ const Formation = () => {
               <div className="flex items-center gap-4 w-full justify-start">
                 <span className="text-2xl font-bold text-[#5DA781]">
                   {experienceData?.data?.experiences_years} ans
-                  <span className="text-xs font-semibold text-gray-700"> d'expériences</span>
+                  <span className="text-xs font-semibold text-gray-700 ml-1"> d'expérience</span>
                 </span>
                 <button
                   onClick={() => {
@@ -375,11 +425,11 @@ const Formation = () => {
 
           {/* Affichage pour grand écran : Tableau classique */}
            {/* Table Desktop */}
-           <div className="hidden sm:block p-4 bg-white border rounded">
-              <h2 className="mb-4 text-sm font-semibold text-gray-800 text-left">Formation</h2>
+           <div className="hidden sm:block bg-white rounded">
+              <h2 className="mb-4 text-sm font-semibold text-gray-800 text-left">Formations</h2>
               <table className="min-w-full text-xs">
                 <thead>
-                  <tr className="text-left border-2">
+                  <tr className="text-left border">
                     <th className="px-4 py-2">Année</th>
                     <th className="px-4 py-2">Diplôme</th>
                     <th className="px-4 py-2">Spécialité</th>
@@ -401,7 +451,7 @@ const Formation = () => {
                           <SpecialityDesignation id={f.formation_specialities.id_pract_speciality} />
                         </td>
                         {idx === 0 && (
-                          <td rowSpan={group.entries.length} className="px-4 py-2 align-top text-left">{group.etablissement}</td>
+                          <td rowSpan={group.entries.length} className="px-4 py-2 align-top text-left border-r">{group.etablissement}</td>
                         )}
                         {idx === 0 && (
                           <td rowSpan={group.entries.length} className="px-4 py-2 align-top text-left">
@@ -428,39 +478,55 @@ const Formation = () => {
 
           {/* Affichage pour mobile : Système dropdown/accordéon */}
           <div className="block sm:hidden">
-            <h2 className="mb-4 text-sm font-semibold text-gray-800">Formation</h2>
-            {formations?.data?.map((formation) => (
-          <div key={formation.id_formation} className="border rounded mb-4">
+        <h2 className="mb-4 text-sm font-semibold text-gray-800">Formation</h2>
+        {grouped.map(group => (
+          <div key={group.key} className="border rounded mb-4">
             <div
               className="flex justify-between items-center p-2 bg-gray-50 cursor-pointer"
-              onClick={() => toggleExpand(formation.id_formation)}
+              onClick={() => toggleExpand(group.key)}
             >
               <div>
-                <div className="font-bold">{new Date(formation.obtained_at).getFullYear()}</div>
-                <div className="text-xs">{formation.certification_name}</div>
+                <div className="font-bold">{group.year}</div>
+                <div className="text-xs">{group.diplome}</div>
+                <div className="text-xs text-gray-500">{group.etablissement}</div>
               </div>
-              <div className="text-xl">
-                {expandedFormationIds.includes(formation.id_formation) ? '−' : '+'}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteGroup(group.entries);
+                  }}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <Trash size={16} />
+                </button>
+                <div className="text-xl">
+                  {expandedGroupKeys.includes(group.key) ? '−' : '+'}
+                </div>
               </div>
             </div>
-            {expandedFormationIds.includes(formation.id_formation) && (
+            
+            {expandedGroupKeys.includes(group.key) && (
               <div className="p-2 text-xs">
-                <div className="mb-1 ">
-                  <span className="font-semibold text-[#5DA781] ">Spécialité :</span>{' '}
-                  <SpecialityDesignation className="border" id={formation.formation_specialities?.id_pract_speciality} />
-                </div>
-                <div className="mb-1">
-                  <span className="font-semibold text-[#5DA781]">Établissement :</span> {formation.institution_name}
-                </div>
-                <div className="flex space-x-2 mt-2">
-                  
-                  <button onClick={() => handleDelete(formation.id_formation)} className="text-red-500 hover:text-red-700">
-                    <Trash size={16} /> 
-                  </button>
-                </div>
+                {group.entries.map(f => (
+                  <div key={f.id_formation} className="mb-2 border-b pb-2">
+                    <div className="mb-1">
+                      <span className="font-semibold text-[#5DA781]">Spécialité :</span>
+                      <SpecialityDesignation id={f.formation_specialities?.id_pract_speciality} />
+                    </div>
+                    <button
+                      onClick={() => handleDelete(f.id_formation)}
+                      className="text-red-500 hover:text-red-700 mt-1"
+                    >
+                      <Trash size={14} className="inline mr-1" />
+                      Supprimer cette entrée
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
+        
         ))}
             <button 
               onClick={handleAdd} 

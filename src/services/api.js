@@ -179,3 +179,17 @@ export const getNumberAndName = async (mail) => {
     throw new Error(errorMessage);
   }
 };
+
+export const formatNumero = (numero) => {
+  // 1. On ne conserve que les chiffres
+  const digits = numero.replace(/\D/g, "");
+  
+  // 2. On prend les 9 derniers chiffres
+  const lastNine = digits.slice(-9);
+  
+  // 3. On préfixe d’un seul zéro
+  const masked = "0" + lastNine;
+  
+  // 4. On groupe par paires et on joint avec un espace
+  return masked.match(/.{1,2}/g)?.join(" ") ?? masked;
+}

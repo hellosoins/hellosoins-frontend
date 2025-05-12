@@ -69,6 +69,8 @@ const SignInForm = ({ onAccountCreated, isLoading }) => {
     onChange(phone);
   };
 
+  
+
   // Champs requis pour l'étape 1 incluant code postal et ville
   const requiredFieldsStep1 = [
     "nom",
@@ -377,7 +379,8 @@ const SignInForm = ({ onAccountCreated, isLoading }) => {
                             handlePhoneChange(phone, country, onChange)
                           }
                           placeholder="Entrez votre numéro mobile"
-                          className="h-[32px] px-1 text-xs border rounded-md"
+                          className="h-[35px] p-4 text-xs text-gray-800 border rounded-md"
+                          
                         />
                       )}
                     />
