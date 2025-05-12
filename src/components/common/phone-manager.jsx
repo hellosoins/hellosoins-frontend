@@ -1,5 +1,6 @@
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
+import flags from 'react-phone-number-input/flags';
 
 const PhoneManager = ({
     value,
@@ -9,13 +10,18 @@ const PhoneManager = ({
   }) => {
     return (
       <PhoneInput
-        international={false} // Format national
-        countryCallingCodeEditable={false}
-        defaultCountry={country}
-        value={value}
-        onChange={onChange}
-        {...props}
-      />
+      international={false}
+      countryCallingCodeEditable={false}
+      defaultCountry={country}
+      value={value}
+      onChange={onChange}
+      limitMaxLength={true}
+      inputProps={{ maxLength: 11 }}
+      {...props}
+      flags={flags} 
+      addInternationalOption={false}
+/>
+
     );
   };
   

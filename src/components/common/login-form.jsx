@@ -61,7 +61,7 @@ export const LoginForm = ({ className, ...props }) => {
       
       // Stockage des données pour la navigation
       setUserDetails(details)
-      setSuccessDialogOpen(true)
+      navigate('/code', { state: userDetails })
       
     } catch (error) {
       setMessage(error.message || 'Une erreur est survenue')
@@ -87,30 +87,6 @@ export const LoginForm = ({ className, ...props }) => {
 
   return (
     <>
-      {/* Dialogue de bienvenue modifié */}
-      <Dialog
-        open={successDialogOpen}
-        onOpenChange={(open) => {
-          setSuccessDialogOpen(open)
-          if (!open) navigate('/code', { state: userDetails })
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Bienvenue {userDetails.mail}</DialogTitle>
-            <DialogDescription className="text-xs">
-              Un code de vérification a été envoyé à votre adresse email et téléphone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button className="text-xs bg-green-600 rounded">
-                Continuer vers la vérification
-              </Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
             <div className={cn('flex flex-col gap-6', className)} {...props}>
         <div  className="p-6 md:p-8 relative">

@@ -79,6 +79,9 @@ export default function GestionDesTarif() {
 
   return (
     <>
+               <p className="text-orange-700">
+  🚧 ( À rendre fonctionnel )
+</p>
       {/* Desktop et mobile : table (overflow-x masqué) */}
       <div className="hidden md:block w-full overflow-x-hidden">
         <table className="min-w-full table-auto border-collapse text-xs">

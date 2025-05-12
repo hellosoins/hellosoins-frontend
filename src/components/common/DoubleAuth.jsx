@@ -48,7 +48,7 @@ function formatNumero(numero) {
   // Gestion du timer pour le renvoi de code
   useEffect(() => {
     let interval;
-    if (resendTimer > 0) {
+    if (resendTimer > 0) {  
       interval = setInterval(() => {
         setResendTimer((prev) => (prev > 0 ? prev - 1 : 0));
       }, 1000);
@@ -129,17 +129,21 @@ function formatNumero(numero) {
       
       <div className="w-full max-w-md bg-white flex justify-center items-center flex-col rounded-md px-6 pt-4">
         <div className="text-center mb-4 w-full flex justify-center items-center">
-          <div className="text-md mt-4 font-bold text-gray-900 mb-8">
-            Confirmation du compte
-          </div>
-        </div>
-        <div className="text-sm mt-4 text-center font-medium text-gray-500 my-8 w-full">
-          <p className="flex flex-col items-center justify-center gap-4 w-full">
-            Un code de validation vous a été envoyé à l'adresse e-mail
-            <span className="text-gray-500"> <span className="underline text-[#5DA781]"> {mail} </span>  et au numéro <span className="underline text-[#5DA781]"> {formatNumero(numero)}</span></span> 
-            <span>Saisissez le code ci-dessous pour valider votre compte</span>
-          </p>
-        </div>
+  <div className="text-md mt-4 font-bold text-gray-900 mb-8">
+     Vérification additionnelle requise
+  </div>
+</div>
+<div className="text-sm mt-4 text-center font-medium text-gray-500 my-8 w-full">
+  <p className="flex flex-col items-center justify-center gap-4 w-full">
+    Veuillez saisir le code de validation envoyé à votre adresse e-mail 
+    <span className="text-gray-500">
+      <span className="underline text-[#5DA781]"> {mail} </span> 
+      et au numéro 
+      <span className="underline text-[#5DA781]"> {formatNumero(numero)} </span>.
+    </span>
+  </p>
+</div>
+
 
         {errorMessage && (
           <div className="text-red-500 text-sm mb-4">{errorMessage}</div>

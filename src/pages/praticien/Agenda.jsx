@@ -457,6 +457,9 @@ const checkTimeSlots = (timeSlots, date) => {
               <ChevronDown className="w-4 h-4 ml-1" />
             </Button>
           </Link>
+                     <p className="text-orange-700 text-sm">
+  🚧 ( En cours de concéption ... )
+</p>
         </div>
         <div className="flex space-x-2">
           <Button

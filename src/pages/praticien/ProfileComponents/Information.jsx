@@ -7,6 +7,7 @@ import {
   getPatientTypes
 } from '@/services/profile-service';
 import { formatPhoneNumber } from 'react-phone-number-input'
+import { formatNumero } from '@/services/api';
 
 const Information = ({ practitionerData }) => {
   // États pour les données fetchées
@@ -117,7 +118,7 @@ const Information = ({ practitionerData }) => {
               Téléphone :
             </div>
             <div className="w-full md:w-2/3">
-              {formatPhoneNumber(practitionerData.mobile_number)}
+              {formatNumero(practitionerData.mobile_number)}
             </div>
           </div>
           <div className="flex flex-col md:flex-row mb-1">
