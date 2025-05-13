@@ -185,7 +185,7 @@ const TableList = (props) => {
                 Solution
               </th>
               <th className="w-1/7 px-4 py-2 text-xs font-medium text-left border-b">
-                Spécialité
+                Spécialiste
               </th>
               <th className="w-1/7 px-4 py-2 text-xs font-medium text-left border-b">
                 Action

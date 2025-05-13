@@ -10,6 +10,8 @@ import {
 } from "@/services/trouble-solutions-services";
 import { TailSpin } from "react-loader-spinner";
 import { addToast } from "@heroui/react";
+import { Listbox } from "@headlessui/react";
+import { ChevronUpDownIcon } from "@heroicons/react/24/outline";
 
 const TroubleConfig = (props) => {
   const queryClient = useQueryClient();
@@ -30,8 +32,8 @@ const TroubleConfig = (props) => {
   // Pour gérer les solutions sur le dropdown
   const [avalaibleSoltion, setAvalaibleSolution] = useState(
     props.isUpdate && props.initialTrouble
-    ? props.initialTrouble.solutions || []
-    : null
+      ? props.initialTrouble.solutions || []
+      : null
   );
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [addSolutionChecked, setAddSolutionChecked] = useState(false);
@@ -62,7 +64,7 @@ const TroubleConfig = (props) => {
       const foundTrouble = data.troubleSolutions.find(
         (tr) => tr.id === props.initialTrouble.id
       );
-      // // Filtrage des solutions du troubles 
+      // // Filtrage des solutions du troubles
       // var choice = props.initialTrouble;
       // var filteredTrouble = [];
       // foundTrouble.solutions.forEach(foundSolution => {
@@ -74,18 +76,19 @@ const TroubleConfig = (props) => {
       // });
       // choice.solutions = filteredTrouble;
       const choice = { ...props.initialTrouble }; // Copie pour éviter la mutation
-      const choiceSolutionIds = new Set(choice.solutions.map(s => s.id));
+      const choiceSolutionIds = new Set(choice.solutions.map((s) => s.id));
 
-      const filteredTrouble = foundTrouble.solutions
-        .filter(fs => choiceSolutionIds.has(fs.solution))
-        // .filter((v, i, a) => a.findIndex(t => t.id === v.id) === i); // Déduplication
+      const filteredTrouble = foundTrouble.solutions.filter((fs) =>
+        choiceSolutionIds.has(fs.solution)
+      );
+      // .filter((v, i, a) => a.findIndex(t => t.id === v.id) === i); // Déduplication
 
-      const updatedChoice = { 
-        ...choice, 
-        solutions: filteredTrouble 
+      const updatedChoice = {
+        ...choice,
+        solutions: filteredTrouble,
       };
-      console.log({title:'Tous',foundTrouble});
-      console.log({title:'Choix', updatedChoice});
+      console.log({ title: "Tous", foundTrouble });
+      console.log({ title: "Choix", updatedChoice });
 
       if (foundTrouble) {
         setSelectedTrouble(updatedChoice); // à modifier par les choix
@@ -156,11 +159,11 @@ const TroubleConfig = (props) => {
   // Fonction pour gérer la sélection/déselection des solutions
   const handleSolutionToggle = (e, solution) => {
     const isChecked = e.target.checked;
-    setSelectedTrouble(prev => ({
+    setSelectedTrouble((prev) => ({
       ...prev,
-      solutions: isChecked 
+      solutions: isChecked
         ? [...prev.solutions, solution]
-        : prev.solutions.filter(s => s.solution !== solution.solution)
+        : prev.solutions.filter((s) => s.solution !== solution.solution),
     }));
   };
 
@@ -372,23 +375,54 @@ const TroubleConfig = (props) => {
                 {/* Choix de solution existante */}
                 <div className="flex flex-col gap-1">
                   <hr />
-                  <div className="flex flex-col gap-2">
-                    {avalaibleSoltion.map((solution, index) => (
-                      <label key={index} className="flex items-center gap-2 p-2 hover:bg-gray-100 rounded">
-                        <input
-                          type="checkbox"
-                          checked={selectedTrouble.solutions.some(s => s.solution === solution.solution)}
-                          onChange={(e) => handleSolutionToggle(e, solution)}
-                          className="form-checkbox h-4 w-4 text-[#5DA781] rounded focus:ring-[#5DA781]"
-                        />
-                        <span className="flex-1">
-                          {solution.name}
-                          <span className="ml-2 text-xs text-gray-500">
-                            ({getSpecialtyName(solution.specialty)})
-                          </span>
-                        </span>
-                      </label>
-                    ))}
+                  <div className="relative">
+                    <Listbox value={selectedTrouble.solutions} multiple>
+                      {({ open }) => (
+                        <>
+                          <Listbox.Button className="w-full p-2 border border-gray-300 rounded text-left flex justify-between items-center">
+                            <span className="truncate">
+                              {selectedTrouble.solutions.length > 0
+                                ? `${selectedTrouble.solutions.length} solution(s) sélectionnée(s)`
+                                : "Sélectionner des solutions"}
+                            </span>
+                            <ChevronUpDownIcon className="h-5 w-5 text-gray-400" />
+                          </Listbox.Button>
+
+                          <Listbox.Options className="absolute z-10 mt-1 w-full max-h-60 overflow-auto border border-gray-300 bg-white rounded-md shadow-lg">
+                            {avalaibleSoltion.map((solution, index) => (
+                              <Listbox.Option
+                                key={index}
+                                value={solution}
+                                className={({ active }) =>
+                                  `cursor-default select-none relative p-2 ${
+                                    active ? "bg-[#5DA781]/10" : ""
+                                  }`
+                                }
+                              >
+                                {({ selected }) => (
+                                  <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                      type="checkbox"
+                                      checked={selected}
+                                      onChange={(e) =>
+                                        handleSolutionToggle(e, solution)
+                                      }
+                                      className="form-checkbox h-4 w-4 text-[#5DA781] rounded focus:ring-[#5DA781]"
+                                    />
+                                    <span className="flex-1">
+                                      {solution.name}
+                                      <span className="ml-2 text-xs text-gray-500">
+                                        ({getSpecialtyName(solution.specialty)})
+                                      </span>
+                                    </span>
+                                  </label>
+                                )}
+                              </Listbox.Option>
+                            ))}
+                          </Listbox.Options>
+                        </>
+                      )}
+                    </Listbox>
                   </div>
                   {/* lISTES DES SELECTIONNEES */}
                   <ul className="list-disc list-inside">

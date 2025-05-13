@@ -39,7 +39,7 @@ const groupFormations = (list) => {
     }
     map.get(key).entries.push(f);
   });
-  return Array.from(map.values());
+  return Array.from(map.values()).sort((a, b) => b.year - a.year);
 };
 
 const Dropdown = ({ options, selected, onChange, placeholder }) => (
