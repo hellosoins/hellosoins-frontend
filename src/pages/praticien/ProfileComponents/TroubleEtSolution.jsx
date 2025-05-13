@@ -1,5 +1,5 @@
 // TableList.jsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Edit, Trash, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { useQuery } from "@tanstack/react-query";
@@ -37,7 +37,7 @@ const TableList = (props) => {
   } = useQuery({
     queryKey: ["praticien-approches"],
     queryFn: getAllPraticienApproches,
-    staleTime: 1000 * 60 * 10,
+    // staleTime: 1000 * 60 * 10,
   });
 
   // État pour gérer l'accordéon sur mobile
@@ -50,95 +50,108 @@ const TableList = (props) => {
   };
 
   // Construction des lignes pour le tableau (affichage grand écran)
-  const rows = [];
-  approches.forEach((category) => {
-    // Calcul du nombre total de lignes pour la catégorie (pour gérer rowSpan)
-    const totalRowsCategory = category.troubles.reduce(
-      (acc, trouble) => acc + trouble.solutions.length,
-      0
-    );
-    let categoryRendered = false;
-
-    category.troubles.forEach((trouble) => {
-      const specialiteGroups = groupSolutionsBySpecialite(trouble.solutions);
-      const totalRowsTrouble = trouble.solutions.length;
-      let troubleRendered = false;
-
-      specialiteGroups.forEach((group) => {
-        let groupRendered = false;
-        group.solutions.forEach((solution, solIndex) => {
-          rows.push(
-            <tr
-              key={`cat-${category.id}-trouble-${trouble.id}-specialite-${group.specialite}-sol-${solution.id}`}
-              className="divide-y divide-gray-200"
-            >
-              {/* Colonne Catégorie */}
-              {!categoryRendered && (
-                <td
-                  rowSpan={totalRowsCategory}
-                  className="px-4 py-2 align-top border whitespace-nowrap"
-                >
-                  {category.categorie}
-                </td>
-              )}
-              {/* Colonne Trouble */}
-              {!troubleRendered && (
-                <td
-                  rowSpan={totalRowsTrouble}
-                  className="w-[200px] whitespace-normal px-4 py-2 border"
-                >
-                  {trouble.name}
-                </td>
-              )}
-              {/* Colonne Solution */}
-              <td className="px-4 py-2 border whitespace-nowrap">
-                {solution.name}
-              </td>
-              {/* Colonne Spécialité */}
-              {!groupRendered && (
-                <td
-                  rowSpan={group.solutions.length}
-                  className="px-4 py-2 align-top border whitespace-nowrap"
-                >
-                  {group.specialite}
-                </td>
-              )}
-              {/* Colonnes Durée, Tarif et Action (affichées une seule fois par Trouble) */}
-              {!troubleRendered && solIndex === 0 && (
-                <>
+  // const [rows, setRows] = useState([]);
+  // useEffect(() => {
+    const rows = [];
+    approches.forEach((category) => {
+      // Calcul du nombre total de lignes pour la catégorie (pour gérer rowSpan)
+      const totalRowsCategory = category.troubles.reduce(
+        (acc, trouble) => acc + trouble.solutions.length,
+        0
+      );
+      let categoryRendered = false;
+  
+      category.troubles.forEach((trouble) => {
+        const specialiteGroups = groupSolutionsBySpecialite(trouble.solutions);
+        const totalRowsTrouble = trouble.solutions.length;
+        let troubleRendered = false;
+  
+        specialiteGroups.forEach((group) => {
+          let groupRendered = false;
+          group.solutions.forEach((solution, solIndex) => {
+            rows.push(
+              <tr
+                key={`cat-${category.id}-trouble-${trouble.id}-specialite-${group.specialite}-sol-${solution.id}`}
+                className="divide-y divide-gray-200"
+              >
+                {/* Colonne Catégorie */}
+                {!categoryRendered && (
                   <td
-                    rowSpan={totalRowsTrouble}
+                    rowSpan={totalRowsCategory}
                     className="px-4 py-2 align-top border whitespace-nowrap"
                   >
-                    <button
-                      onClick={() => props.onEditTrouble(trouble)}
-                      className="mr-2 text-blue-600 hover:text-blue-900"
-                      title="Modifier"
-                    >
-                      <Edit className="inline-block w-5 h-5" size={15} />
-                    </button>
-                    <button
-                      onClick={() => props.onDeleteTrouble(trouble)}
-                      className="text-red-600 hover:text-red-900"
-                      title="Supprimer"
-                    >
-                      <Trash className="inline-block w-5 h-5" size={15} />
-                    </button>
+                    {category.categorie}
                   </td>
-                </>
-              )}
-            </tr>
-          );
-          categoryRendered = true;
-          troubleRendered = true;
-          groupRendered = true;
+                )}
+                {/* Colonne Trouble */}
+                {!troubleRendered && (
+                  <td
+                    rowSpan={totalRowsTrouble}
+                    className="w-[200px] whitespace-normal px-4 py-2 border"
+                  >
+                    {trouble.name}
+                  </td>
+                )}
+                {/* Colonne Solution */}
+                <td className="px-4 py-2 border whitespace-nowrap">
+                  {solution.name}
+                </td>
+                {/* Colonne Spécialité */}
+                {!groupRendered && (
+                  <td
+                    rowSpan={group.solutions.length}
+                    className="px-4 py-2 align-top border whitespace-nowrap"
+                  >
+                    {group.specialite}
+                  </td>
+                )}
+                {/* Colonnes Durée, Tarif et Action (affichées une seule fois par Trouble) */}
+                {!troubleRendered && solIndex === 0 && (
+                  <>
+                    <td
+                      rowSpan={totalRowsTrouble}
+                      className="px-4 py-2 align-top border whitespace-nowrap"
+                    >
+                      <button
+                        onClick={() => props.onEditTrouble(trouble)}
+                        className="mr-2 text-blue-600 hover:text-blue-900"
+                        title="Modifier"
+                      >
+                        <Edit className="inline-block w-5 h-5" size={15} />
+                      </button>
+                      <button
+                        onClick={() => props.onDeleteTrouble(trouble)}
+                        className="text-red-600 hover:text-red-900"
+                        title="Supprimer"
+                      >
+                        <Trash className="inline-block w-5 h-5" size={15} />
+                      </button>
+                    </td>
+                  </>
+                )}
+              </tr>
+            );
+            categoryRendered = true;
+            troubleRendered = true;
+            groupRendered = true;
+          });
         });
       });
     });
-  });
+  //   setRows(initRows);
+  // },[approches])
 
   const handleDeleteTrouble = () => {
     alert("Test");
+  };
+  
+  const handleEditTrouble = (trouble) => {
+    // Préparer les données complètes du trouble avec ses solutions
+    const fullTroubleData = {
+      ...trouble,
+      solutions: trouble.solutions, // Conserver les solutions existantes
+    };
+    props.onEditTrouble(fullTroubleData);
   };
 
   if (isLoadingSpecialities)
@@ -154,15 +167,6 @@ const TableList = (props) => {
         />
       </div>
     );
-
-  const handleEditTrouble = (trouble) => {
-    // Préparer les données complètes du trouble avec ses solutions
-    const fullTroubleData = {
-      ...trouble,
-      solutions: trouble.solutions, // Conserver les solutions existantes
-    };
-    props.onEditTrouble(fullTroubleData);
-  };
 
   return (
     <>
