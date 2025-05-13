@@ -6,7 +6,7 @@ import { Info } from 'lucide-react';
 const AppointmentsList = ({ appointments }) => (
   <div className="p-1 text-helloBlue">
     {/* Legende por les types de pratiques */}
-    <div className="flex gap-8 mb-2 p-2 hidden">
+    <div className="flex gap-8 mb-2 p-2 ">
       {/* <div className="flex items-center">
         <span
           className="mr-1"

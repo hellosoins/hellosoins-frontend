@@ -84,14 +84,6 @@ const Information = ({ practitionerData }) => {
           </div>
           <div className="flex flex-col md:flex-row mb-1">
             <div className="w-full md:w-1/3 pr-2 font-semibold text-left">
-              Civilité :
-            </div>
-            <div className="w-full md:w-2/3">
-              {practitionerData.situation}
-            </div>
-          </div>
-          <div className="flex flex-col md:flex-row mb-1">
-            <div className="w-full md:w-1/3 pr-2 font-semibold text-left">
               Type de patient :
             </div>
             <div className="w-full md:w-2/3 overflow-hidden">
