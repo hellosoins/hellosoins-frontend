@@ -1,45 +1,31 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Save, Trash2 } from 'lucide-react';
-
-const ALL_SPECIALITIES = [
-  'Énergétique Traditionnelle Chinoise',
-  'Réflexologie',
-  'Hypnothérapie',
-  'Tui Na',
-  'Reiki',
-];
-const ALL_LIEUX = [
-  'Cabinet Équilibre',
-  'Cabinet Bien-Être',
-  'Cabinet Montmartre',
-  'Domicile',
-];
+import { Save, Trash2, PlusCircle } from 'lucide-react';
 
 export default function EditTarif({
-  mode,          // 'add' ou 'edit'
-  existing,      // l’objet tarif existant (pour 'edit'), ou undefined
-  onClose,       // ferme le form
-  onSave,        // callback (newTarif) pour add, ou (updatedTarif) pour edit
+  mode,          // 'add' or 'edit'
+  existing,      // existing tarif object for 'edit', or undefined
+  onClose,       // close form callback
+  onSave,        // save callback
 }) {
   const isEdit = mode === 'edit';
 
   const [speciality, setSpeciality] = useState('');
-  const [lieux, setLieux] = useState([]);
   const [color, setColor] = useState('#009688');
   const [services, setServices] = useState([]);
+  const [lieux, setLieux] = useState([]);
 
   useEffect(() => {
     if (isEdit && existing) {
       setSpeciality(existing.speciality);
-      setLieux(existing.lieux);
+      setLieux(existing.lieux || []);
       const m = existing.color.match(/#?[0-9A-Fa-f]{6}/);
       setColor(m ? (m[0].startsWith('#') ? m[0] : `#${m[0]}`) : '#009688');
       setServices(
         Object.entries(existing.services).map(([type, { duree, tarif }]) => ({
           type,
-          duree: parseInt(duree, 10),
-          tarif: parseInt(tarif, 10),
+          duree: parseInt(duree, 10) || '',
+          tarif: parseInt(tarif, 10) || '',
         }))
       );
     }
@@ -53,24 +39,27 @@ export default function EditTarif({
     }
   }, [isEdit, existing]);
 
-  const handleLieuxChange = e => {
-    const { value, checked } = e.target;
-    setLieux(prev =>
-      checked ? [...prev, value] : prev.filter(l => l !== value)
-    );
-  };
-
   const handleServiceChange = (i, field, val) => {
     setServices(svcs =>
       svcs.map((s, idx) => (idx === i ? { ...s, [field]: val } : s))
     );
   };
 
+  const addService = () => {
+    setServices(s => [...s, { type: '', duree: '', tarif: '' }]);
+  };
+
+  const handleLieuxChange = e => {
+    // split comma-separated values and trim
+    const values = e.target.value.split(',').map(v => v.trim()).filter(v => v);
+    setLieux(values);
+  };
+
   const handleSubmit = e => {
     e.preventDefault();
     const payload = {
       id: isEdit ? existing.id : Date.now(),
-      colour: `bg-[${color}]`,
+      color: `bg-[${color}]`,
       speciality,
       lieux,
       services: services.reduce(
@@ -86,66 +75,60 @@ export default function EditTarif({
   };
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white rounded p-4 text-xs"
-    >
+    <form onSubmit={handleSubmit} className="bg-white rounded p-4 text-xs">
+      {/* Lieux (comma-separated) */}
+      <label className="block mb-4">
+        <span className="font-bold text-gray-700">
+          Cabinet(s) (séparés par des virgules) <span className="text-red-400">*</span>
+        </span>
+        <input
+          type="text"
+          required
+          className="mt-1 block w-full md:w-1/2 border rounded px-3 py-2"
+          value={lieux.join(', ')}
+          onChange={handleLieuxChange}
+          placeholder="Ex: Cabinet Montmartre, Cabinet Bastille"
+        />
+      </label>
+
       {/* Spécialité */}
       <label className="block mb-4">
         <span className="font-bold text-gray-700">
           Spécialité <span className="text-red-400">*</span>
         </span>
-        <select
+        <input
+          type="text"
           required
           className="mt-1 block w-full md:w-1/2 border rounded px-3 py-2"
           value={speciality}
           onChange={e => setSpeciality(e.target.value)}
-        >
-          <option value="">Sélectionner une spécialité</option>
-          {ALL_SPECIALITIES.map(s => (
-            <option key={s}>{s}</option>
-          ))}
-        </select>
+          placeholder="Nom de la spécialité"
+        />
       </label>
-
-      {/* Lieux */}
-      <fieldset className="mb-4">
-        <legend className="font-bold text-gray-700 mb-2">
-          Cabinet d'application
-        </legend>
-        <div className="flex flex-wrap gap-2">
-          {ALL_LIEUX.map(l => (
-            <label key={l} className="inline-flex items-center space-x-1">
-              <input
-                type="checkbox"
-                value={l}
-                checked={lieux.includes(l)}
-                onChange={handleLieuxChange}
-                className="mr-1"
-              />
-              <span>{l}</span>
-            </label>
-          ))}
-        </div>
-      </fieldset>
 
       {/* Services */}
       <div className="mb-4">
-        <span className="font-bold text-gray-700 block mb-2">
-          Types de consultation
-        </span>
+        <div className="flex justify-start items-start mb-2">
+          <span className="font-bold text-gray-700">Types de consultation</span>
+        </div>
         {services.map((svc, i) => (
           <div
-            key={svc.type}
-            className="flex flex-col md:flex-row md:items-center w-full md:space-x-2 space-y-4 md:space-y-2 mb-2"
+            key={i}
+            className="flex flex-col md:flex-row md:items-center w-full md:space-x-2 mb-4"
           >
-            <span className="w-full md:w-40 font-bold text-gray-900">
-              {svc.type}
-            </span>
+            <div className="w-full md:w-40 text-gray-900 space-y-1">
+              <label>Type <span className="text-red-400">*</span></label>
+              <input
+                type="text"
+                required
+                placeholder="Nom du type"
+                className="w-full border rounded px-2 py-2"
+                value={svc.type}
+                onChange={e => handleServiceChange(i, 'type', e.target.value)}
+              />
+            </div>
             <div className="w-full md:w-1/3 text-gray-700 space-y-1">
-              <label>
-                Durée <span className="text-red-400">*</span> (min)
-              </label>
+              <label>Durée (min) <span className="text-red-400">*</span></label>
               <input
                 type="number"
                 placeholder="Durée (min)"
@@ -156,9 +139,7 @@ export default function EditTarif({
               />
             </div>
             <div className="w-full md:w-1/3 text-gray-700 space-y-1">
-              <label>
-                Tarif <span className="text-red-400">*</span> (€)
-              </label>
+              <label>Tarif (€) <span className="text-red-400">*</span></label>
               <input
                 type="number"
                 placeholder="Tarif (€)"
@@ -170,22 +151,21 @@ export default function EditTarif({
             </div>
             <Button
               size="sm"
-              onClick={() =>
-                setServices(s => s.filter((_, idx) => idx !== i))
-              }
-              className="bg-red-600 text-white w-auto md:w-auto"
+              onClick={() => setServices(s => s.filter((_, idx) => idx !== i))}
+              className="bg-red-600 text-white mt-2 md:mt-0"
             >
-              <Trash2 size={16} /> <span className='sm:hidden'>Supprimer</span>
+              <Trash2 size={16} /> <span className="sm:hidden">Supprimer</span>
             </Button>
           </div>
         ))}
+        <Button size="sm" onClick={addService} className="flex items-center bg-blue-gray-800 rounded shadow-none">
+          <PlusCircle size={16} /> <span className="ml-1">Ajouter</span>
+        </Button>
       </div>
 
       {/* Couleur */}
-      <div className="mb-4 flex flex-col">
-        <span className="font-bold text-gray-700 mb-1">
-          Choisir une couleur
-        </span>
+      <div className="mb-4 flex flex-col space-y-2 items-start">
+        <span className="font-bold text-gray-700">Choisir une couleur</span>
         <input
           type="color"
           className="w-12 h-12 border-none"

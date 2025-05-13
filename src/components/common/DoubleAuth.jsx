@@ -67,7 +67,7 @@ function formatNumero(numero) {
         code 
       });
       
-      console.log("voici : "+token)
+
       localStorage.setItem('authToken', token);
       
       navigate('/praticien/premierpas');
@@ -135,11 +135,11 @@ function formatNumero(numero) {
 </div>
 <div className="text-sm mt-4 text-center font-medium text-gray-500 my-8 w-full">
   <p className="flex flex-col items-center justify-center gap-4 w-full">
-    Veuillez saisir le code de validation envoyé à votre adresse e-mail 
+    Veuillez saisir le code de validation envoyé à votre adresse mail 
     <span className="text-gray-500">
       <span className="underline text-[#5DA781]"> {mail} </span> 
-      et au numéro 
-      <span className="underline text-[#5DA781]"> {formatNumero(numero)} </span>.
+      {/* et au numéro 
+      <span className="underline text-[#5DA781]"> {formatNumero(numero)} </span>. */}
     </span>
   </p>
 </div>

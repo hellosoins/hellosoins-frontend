@@ -24,7 +24,6 @@ import {
 import Information from "./ProfileComponents/Information";
 import Formation from "./ProfileComponents/Formation";
 import TroubleManager from "./ProfileComponents/TroubleManager";
-import Avis from "./ProfileComponents/Avis";
 import { Button } from "@/components/ui/Button";
 import Cabinets from "./ProfileComponents/Cabinets";
 import axios from "axios";
@@ -34,13 +33,10 @@ const TABS = [
   { id: "informations", label: "Informations" },
   { id: "formations", label: "Formations et expériences" },
   { id: "troubles", label: "Mes Thérapies" },
-  { id: "cabinets", label: "Cabinets" },
-  { id: "avis", label: "Mes type de rendez-vous" },
+  { id: "cabinets", label: "Cabinets" }
 ];
 import { TailSpin } from "react-loader-spinner";
 import { API_URL } from "@/services/api";
-import GestionDesTarif from "./ProfileComponents/GestionDesTarif";
-
 const tabIcons = {
   informations: <User className="w-6 h-6" />,
   formations: <GraduationCap className="w-6 h-6" />,
@@ -322,9 +318,6 @@ const PraticienProfil = () => {
         )}
         {activeTab === "cabinets" && (
           <Cabinets practitionerData={practitionerData} />
-        )}
-        {activeTab === "avis" && (
-          <GestionDesTarif practitionerData={practitionerData} />
         )}
       </div>
 
