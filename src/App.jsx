@@ -21,7 +21,8 @@ import EditFormation from './pages/praticien/ProfileComponents/EditFormation';
 import TroubleConfig from './pages/praticien/ProfileComponents/TroubleConfig';
 import PremierPas from './pages/praticien/PremierPas';
 import Agendav2 from './pages/praticien/Agenda';
-import DoubleAuth from './components/common/DoubleAuth';
+import DoubleAuth from './components/common/Doubleauth';
+import Accueil from './pages/accueil/Accueil';
 
 function App() {
   const location = useLocation();
@@ -34,7 +35,7 @@ function App() {
       <>
         <div className="content-full-width">
           <Routes>
-            <Route path="/agenda" element={<Agendav2 />} />
+            <Route path="/agenda" element={<Agendav2/>} />
             
           </Routes>
         </div>
@@ -55,7 +56,7 @@ function App() {
             {/* Pages de connexion */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signin" element={<AccountCreationContainer />} />
-            <Route path="/" element={<LoginPage />} />
+            <Route path="/" element={<Accueil/>} />
             <Route path="/code" element={<DoubleAuth />} />
 
             {/* PRATICIEN */}

@@ -29,6 +29,8 @@ const TroubleManager = () => {
   const handleBack = () => {
     setCurrentView('table')
     setIsUpdate(false);
+    setSelectedTrouble(null);
+    queryClient.invalidateQueries(['praticien-approches']);
   };
 
   // Delete
