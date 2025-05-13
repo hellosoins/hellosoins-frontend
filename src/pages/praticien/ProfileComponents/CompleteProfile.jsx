@@ -73,6 +73,7 @@ const CompleteProfile = () => {
   const [etablissements, setEtablissements] = useState([]);
   const [selectedEtablissement, setSelectedEtablissement] = useState(null);
   const [isSirenFocused, setIsSirenFocused] = useState(false);
+  const [isTouched, setIsTouched] = useState(false);
 
 
 
@@ -230,6 +231,13 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
   }, [codePostal, ville]); // Déclencher quand le code postal change
 
 // GESTION NUMERO-DE-SIREN
+  useEffect(() => {
+    if (isTouched && siren.length === 9) {
+      setSiretError("");
+      setIsVerifyingSiret(true);
+      handleVerifySiren().finally(() => setIsVerifyingSiret(false));
+    }
+  }, [siren, isTouched]);
   const selectEtablissement = (etab) => {
     setSelectedEtablissement(etab);
     setSiret(etab.siret);
@@ -241,50 +249,50 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
     setSiretDisplayDetails(etab);
   };
 
-const handleVerifySiren = async () => {
-  const cleanedSiren = siren.replace(/\s/g, "");
-  setIsVerifyingSiret(true);
-  setSiretError("");
-  setSiretSuccess(false);
+  const handleVerifySiren = async () => {
+    const cleanedSiren = siren.replace(/\s/g, "");
+    setIsVerifyingSiret(true);
+    setSiretError("");
+    setSiretSuccess(false);
 
-  if (cleanedSiren.length !== 9) {
-    setSiretError("Le SIREN doit contenir exactement 9 chiffres");
-    setIsVerifyingSiret(false);
-    return false;
-  }
-
-  try {
-    const proxyUrl = "https://api.corsproxy.io/";
-    const response = await axios.get(
-      `${proxyUrl}https://data.siren-api.fr/v3/unites_legales/${cleanedSiren}`,
-      { headers: { "X-Client-Secret": "cIUGdgdH5qiqyFOcQY4ZuK3wkSRBpbqQ", "X-Requested-With": "XMLHttpRequest" } }
-    );
-
-    const unite = response.data.unite_legale;
-    const liste = Array.isArray(unite.etablissements) ? unite.etablissements : [];
-    setEtablissements(liste);
-
-    if (liste.length === 0) {
-      throw new Error("Aucun établissement trouvé");
+    if (cleanedSiren.length !== 9) {
+      setSiretError("Le SIREN doit contenir exactement 9 chiffres");
+      setIsVerifyingSiret(false);
+      return false;
     }
 
-    // Pré-sélection : siège social si présent
-    const siege = liste.find((e) => e.etablissement_siege) || liste[0];
-    selectEtablissement(siege);
+    try {
+      const proxyUrl = "https://api.corsproxy.io/";
+      const response = await axios.get(
+        `${proxyUrl}https://data.siren-api.fr/v3/unites_legales/${cleanedSiren}`,
+        { headers: { "X-Client-Secret": "cIUGdgdH5qiqyFOcQY4ZuK3wkSRBpbqQ", "X-Requested-With": "XMLHttpRequest" } }
+      );
 
-    setDenomination(unite.denomination || "");
-    setSiretSuccess(true);
-    return true;
+      const unite = response.data.unite_legale;
+      const liste = Array.isArray(unite.etablissements) ? unite.etablissements : [];
+      setEtablissements(liste);
 
-  } catch (error) {
-    console.error(error);
-    setSiretError("Erreur lors de la vérification du SIREN");
-    return false;
+      if (liste.length === 0) {
+        throw new Error("Aucun établissement trouvé");
+      }
 
-  } finally {
-    setIsVerifyingSiret(false);
-  }
-};
+      // Pré-sélection : siège social si présent
+      const siege = liste.find((e) => e.etablissement_siege) || liste[0];
+      selectEtablissement(siege);
+
+      setDenomination(unite.denomination || "");
+      setSiretSuccess(true);
+      return true;
+
+    } catch (error) {
+      console.error(error);
+      setSiretError("Erreur lors de la vérification du SIREN");
+      return false;
+
+    } finally {
+      setIsVerifyingSiret(false);
+    }
+  };
 
 
 
@@ -892,85 +900,91 @@ const handleVerifySiren = async () => {
           </div>
           
           {/* SIREN */}
-<div ref={sirenRef}>
-  <label className="block text-xs font-medium text-gray-700">
-    Numéro de Siren <span className="text-red-700">*</span>
-  </label>
-  <div className="flex gap-2">
-    <input
-      ref={sirenRef}
-      type="text"
-      value={siren}
-        onChange={(e) => {
-          const raw = e.target.value.replace(/\D/g, "").slice(0, 9);
-          setSiren(raw);
+          <div ref={sirenRef}>
+            <label className="block text-xs font-medium text-gray-700">
+              Numéro de Siren <span className="text-red-700">*</span>
+            </label>
+            <div className="flex gap-2">
+              <input
+                ref={sirenRef}
+                type="text"
+                value={siren}
+                onChange={(e) => {
+  const raw = e.target.value.replace(/\D/g, "").slice(0, 9);
+  setSiren(raw);
+  setSiretSuccess(false);
+  setEtablissements([]);
+  setSelectedEtablissement(null);
 
-          // Dès que 9 chiffres atteints, relancer la vérif API
-          if (raw.length === 9) {
-            handleVerifySiren();
+  if (!isTouched) {
+    setIsTouched(true);  // L'utilisateur a touché le champ
+  }
+
+  if (raw.length < 9) {
+    setSiretError("Le SIREN doit contenir exactement 9 chiffres");
+  }
+}}
+                placeholder="123456789"
+                className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
+                  siretError ? "border-red-500" : "border-gray-300"
+                }`}
+                inputMode="numeric"
+              />
+            </div>
+            {isVerifyingSiret && (
+              <p className="text-gray-500 text-xs italic mt-1">
+                Vérification du SIREN…
+              </p>
+            )}
+
+            { siretSuccess && etablissements.length > 1 && (
+            <div className="mt-2">
+              <label className="block text-xs font-medium text-gray-700">
+                Choisissez un établissement
+              </label>
+              <select
+                className="mt-1 block w-full text-xs rounded border px-3 py-2"
+                value={selectedEtablissement?.siret || ""}
+                onChange={(e) => {
+                  const etab = etablissements.find((x) => x.siret === e.target.value);
+                  selectEtablissement(etab);
+                }}
+              >
+                {etablissements.map((etab) => (
+                  <option key={etab.siret} value={etab.siret}>
+                    {[etab.numero_voie, etab.type_voie, etab.libelle_voie, etab.code_postal, etab.libelle_commune]
+                    .filter(Boolean)
+                    .join(" ")} – {etab.etablissement_siege ? "Siège" : `NIC ${etab.nic}`}
+
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+            { // Cas 1 : erreur différente de longueur → toujours affichée
+            siretError &&
+            siretError !== "Le SIREN doit contenir exactement 9 chiffres" && (
+              <p className="text-red-500 text-xs">{siretError}</p>
+            )
           }
-        }}
-        onFocus={() => setIsSirenFocused(true)}
-        onBlur={() => {
-          setIsSirenFocused(false);
-          // uniquement à la sortie du champ : afficher l’erreur de longueur si besoin
-          handleVerifySiren();
-        }}
-      placeholder="123456789"
-      className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
-        siretError ? "border-red-500" : "border-gray-300"
-      }`}
-      inputMode="numeric"
-    />
-  </div>
-  { siretSuccess && etablissements.length > 1 && (
-  <div className="mt-2">
-    <label className="block text-xs font-medium text-gray-700">
-      Choisissez un établissement
-    </label>
-    <select
-      className="mt-1 block w-full text-xs rounded border px-3 py-2"
-      value={selectedEtablissement?.siret || ""}
-      onChange={(e) => {
-        const etab = etablissements.find((x) => x.siret === e.target.value);
-        selectEtablissement(etab);
-      }}
-    >
-      {etablissements.map((etab) => (
-        <option key={etab.siret} value={etab.siret}>
-          {[etab.numero_voie, etab.type_voie, etab.libelle_voie, etab.code_postal, etab.libelle_commune]
-          .filter(Boolean)
-          .join(" ")} – {etab.etablissement_siege ? "Siège" : `NIC ${etab.nic}`}
+          { // Cas 2 : erreur de longueur → uniquement si on n’est PAS focalisé
+            siretError === "Le SIREN doit contenir exactement 9 chiffres" &&
+            !isSirenFocused && (
+              <p className="text-red-500 text-xs">{siretError}</p>
+            )
+          }
 
-        </option>
-      ))}
-    </select>
-  </div>
-)}
+            {siretSuccess && siretDisplayDetails && (
+            <div className="mt-2 p-2 bg-gray-100 text-xs rounded">
+              <p><strong>Entreprise :</strong> {denomination}</p>
+              <p><strong>SIRET :</strong> {siret}</p>
+              <p><strong>Adresse :</strong> {adresse}</p>
+              <p><strong>Ville :</strong> {ville} {codePostal}</p>
+            </div>
+          )}
 
-  { // Cas 1 : erreur différente de longueur → toujours affichée
-  siretError &&
-  siretError !== "Le SIREN doit contenir exactement 9 chiffres" && (
-    <p className="text-red-500 text-xs">{siretError}</p>
-  )
-}
-{ // Cas 2 : erreur de longueur → uniquement si on n’est PAS focalisé
-  siretError === "Le SIREN doit contenir exactement 9 chiffres" &&
-  !isSirenFocused && (
-    <p className="text-red-500 text-xs">{siretError}</p>
-  )
-}
-
-  {siretSuccess && siretDisplayDetails && (
-  <div className="mt-2 p-2 bg-gray-100 text-xs rounded">
-    <p><strong>Entreprise :</strong> {denomination}</p>
-    <p><strong>SIRET :</strong> {siret}</p>
-    <p><strong>Adresse :</strong> {adresse}</p>
-    <p><strong>Ville :</strong> {ville} {codePostal}</p>
-  </div>
-)}
-
-</div>
+          </div>
 
 
           {/* Adresse */}
