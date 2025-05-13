@@ -29,6 +29,7 @@ const CompleteProfile = () => {
   const fileInputRef = useRef(null);
   const location = useLocation();
   const initialImgFile = location.state?.imgFile || null;
+  const sirenRef = useRef(null);
 
   const {
     control,
@@ -70,7 +71,9 @@ const CompleteProfile = () => {
   const [siretDetails, setSiretDetails] = useState(null);
   const [siretDisplayDetails, setSiretDisplayDetails] = useState(null);
   const [etablissements, setEtablissements] = useState([]);
-const [selectedEtablissement, setSelectedEtablissement] = useState(null);
+  const [selectedEtablissement, setSelectedEtablissement] = useState(null);
+  const [isSirenFocused, setIsSirenFocused] = useState(false);
+
 
 
   const [codePostalValide, setCodePostalValide] = useState(false);
@@ -226,7 +229,7 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
     }
   }, [codePostal, ville]); // Déclencher quand le code postal change
 
-// GESTION NUMERO-DE-SIRET
+// GESTION NUMERO-DE-SIREN
   const selectEtablissement = (etab) => {
     setSelectedEtablissement(etab);
     setSiret(etab.siret);
@@ -443,20 +446,30 @@ const handleVerifySiren = async () => {
   }
 };
   
-
+  function formatDateFr(dateString) {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("fr-FR", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    }).format(date); // ex. "05 janvier 2024"
+  }
 // GESTION DES AUTRES CHANGEMENT OU ETAT : CHECKBOX, DROP PHOTO, DATE
   const profilePicRef = useRef();
   const handleModifyProfile = () => navigate("/profil");
   const TODAY = new Date().toISOString().slice(0, 10);
-  const MIN_DATE = "1960-01-01";
-  const MAX_AGE_DATE = (() => {
+  // 1. Au début de votre composant, calculez la date minimale (100 ans en arrière)
+  const MIN_DATE = (() => {
     const d = new Date();
-    d.setFullYear(d.getFullYear() - 65);
-    return d.toISOString().slice(0, 10);
+    d.setFullYear(d.getFullYear() - 100);          // 100 ans en arrière :contentReference[oaicite:0]{index=0}
+    return d.toISOString().slice(0, 10);           // format YYYY-MM-DD
   })();
+
+  // 2. Date maxi pour 18 ans (vous l’avez déjà)
   const MAX_ADULT_DATE = (() => {
     const d = new Date();
-    d.setFullYear(d.getFullYear() - 18);
+    d.setFullYear(d.getFullYear() - 15);
     return d.toISOString().slice(0, 10);
   })();
 
@@ -505,31 +518,29 @@ const handleVerifySiren = async () => {
     setErrors((prev) => ({ ...prev, dateNaissance: undefined })); // clear error
   };
   const validateDate = () => {
-    if (dateNaissance.length !== 10) return;
-    const sel = new Date(dateNaissance);
-    const min = new Date(MIN_DATE);
-    const maxAge = new Date(MAX_AGE_DATE);
-    const maxAdult = new Date(MAX_ADULT_DATE);
+    if (dateNaissance.length !== 10) return;  // pas de date complète → rien
 
-    if (sel < min) {
-      setDateNaissance(MIN_DATE);
-      setErrors((prev) => ({
-        ...prev,
-        dateNaissance: "Date de naissance trop ancienne.",
-      }));
-    } else if (sel > maxAdult) {
-      setDateNaissance(MAX_ADULT_DATE);
-      setErrors((prev) => ({
-        ...prev,
-        dateNaissance: "Vous devez avoir au moins 18 ans.",
-      }));
-    } else if (sel < maxAge) {
-      setDateNaissance(MAX_AGE_DATE);
-      setErrors((prev) => ({
-        ...prev,
-        dateNaissance: "L'âge maximum est de 65 ans.",
-      }));
-    }
+  const sel = new Date(dateNaissance);
+  const min = new Date(MIN_DATE);
+  const maxAdult = new Date(MAX_ADULT_DATE);
+
+    // Réinitialisation du message d’erreur
+  setErrors(prev => ({ ...prev, dateNaissance: "" }));
+
+  if (sel < min) {
+    // date trop ancienne, on signale mais on ne change pas dateNaissance
+    setErrors(prev => ({
+      ...prev,
+      dateNaissance: `Date de naissance trop ancienne pour exercer.`,
+    }));
+  } 
+  else if (sel > maxAdult) {
+    // moins de 15 ans
+    setErrors(prev => ({
+      ...prev,
+      dateNaissance: "Vous devez avoir au moins 15 ans.",
+    }));
+  }
   };
   
 
@@ -537,26 +548,32 @@ const handleVerifySiren = async () => {
   const handleSubmitForm = async () => {
     const isValid = await validateFields();
     if(isValid == false)return; // Verification de toute les champs
+    validateDate();
 
-    // if (!siretSuccess) {
-    //   const confirmVerification = window.confirm(
-    //     "Le SIRET n'a pas été vérifié. Souhaitez-vous tout de même soumettre le formulaire ?"
-    //   );
-    //   if (!confirmVerification) return;
-    // }
+    // Si une erreur persiste, on bloque
+    if (errors.dateNaissance) {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
 
+    if (siretError) {
+      sirenRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     setIsSubmitting(true);
     try {
       const isFirstCompletion = !initialData?.practitioner_info;
       const token = localStorage.getItem("authToken");
       const formData = new FormData();
 
-      const isSiretValid = await handleVerifySiren(); // ✅ Maintenant on vérifie le SIREN
-if (!isSiretValid) {
-  setSiretError("SIREN invalide. Veuillez corriger le numéro.");
-  setIsSubmitting(false);
-  return;
-}
+      const isSiretValid = await handleVerifySiren();
+      if (!isSiretValid) {
+        setSiretError("SIREN invalide. Veuillez corriger le numéro.");
+        // Scroll smooth vers le champ Siren
+        sirenRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+        setIsSubmitting(false);
+        return;
+      }
 
 
       // Ajout de isCompletion dans formData
@@ -804,18 +821,23 @@ if (!isSiretValid) {
             <input
               type="date"
               min={MIN_DATE}
-              max={MAX_ADULT_DATE} // ne pas autoriser > aujourd’hui :contentReference[oaicite:9]{index=9}
+              max={MAX_ADULT_DATE}
               value={dateNaissance}
-              onChange={handleDateChange} // mise à jour sans validation
-              onBlur={validateDate} // validation seulement au blur :contentReference[oaicite:10]{index=10}
+              onChange={e => {
+                setDateNaissance(e.target.value);
+                // on efface l’erreur dès la saisie
+                setErrors(prev => ({ ...prev, dateNaissance: "" }));
+              }}
+              onBlur={validateDate}
               className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
                 errors.dateNaissance ? "border-red-500" : "border-gray-300"
               }`}
             />
             {errors.dateNaissance && (
-              <p className="text-red-600 text-xs">{errors.dateNaissance}</p>
+              <p className="text-red-600 text-xs mt-1">{errors.dateNaissance}</p>
             )}
           </div>
+
 
           {/* Email */}
           <div>
@@ -870,19 +892,30 @@ if (!isSiretValid) {
           </div>
           
           {/* SIREN */}
-<div>
+<div ref={sirenRef}>
   <label className="block text-xs font-medium text-gray-700">
     Numéro de Siren <span className="text-red-700">*</span>
   </label>
   <div className="flex gap-2">
     <input
+      ref={sirenRef}
       type="text"
       value={siren}
-      onChange={(e) => {
-        const formatted = e.target.value.replace(/\D/g, "").slice(0, 9);
-        setSiren(formatted);
-      }}
-      onBlur={handleVerifySiren}
+        onChange={(e) => {
+          const raw = e.target.value.replace(/\D/g, "").slice(0, 9);
+          setSiren(raw);
+
+          // Dès que 9 chiffres atteints, relancer la vérif API
+          if (raw.length === 9) {
+            handleVerifySiren();
+          }
+        }}
+        onFocus={() => setIsSirenFocused(true)}
+        onBlur={() => {
+          setIsSirenFocused(false);
+          // uniquement à la sortie du champ : afficher l’erreur de longueur si besoin
+          handleVerifySiren();
+        }}
       placeholder="123456789"
       className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
         siretError ? "border-red-500" : "border-gray-300"
@@ -905,14 +938,29 @@ if (!isSiretValid) {
     >
       {etablissements.map((etab) => (
         <option key={etab.siret} value={etab.siret}>
-          {etab.siret} – {etab.etablissement_siege ? "Siège" : `NIC ${etab.nic}`}
+          {[etab.numero_voie, etab.type_voie, etab.libelle_voie, etab.code_postal, etab.libelle_commune]
+          .filter(Boolean)
+          .join(" ")} – {etab.etablissement_siege ? "Siège" : `NIC ${etab.nic}`}
+
         </option>
       ))}
     </select>
   </div>
 )}
 
-  {siretError && <p className="text-red-500 text-xs">{siretError}</p>}
+  { // Cas 1 : erreur différente de longueur → toujours affichée
+  siretError &&
+  siretError !== "Le SIREN doit contenir exactement 9 chiffres" && (
+    <p className="text-red-500 text-xs">{siretError}</p>
+  )
+}
+{ // Cas 2 : erreur de longueur → uniquement si on n’est PAS focalisé
+  siretError === "Le SIREN doit contenir exactement 9 chiffres" &&
+  !isSirenFocused && (
+    <p className="text-red-500 text-xs">{siretError}</p>
+  )
+}
+
   {siretSuccess && siretDisplayDetails && (
   <div className="mt-2 p-2 bg-gray-100 text-xs rounded">
     <p><strong>Entreprise :</strong> {denomination}</p>
