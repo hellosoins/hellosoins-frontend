@@ -163,6 +163,10 @@ const CompleteProfile = () => {
     fetchPractitioner();
   }, []);
 
+// gestion commune 
+const [communes, setCommunes] = useState([]);
+const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
+
 
 // MISE A JOUR % DE COMPLETION PROFIL
   useEffect(() => {
@@ -395,14 +399,19 @@ const CompleteProfile = () => {
   setLoadingCodePostal(true);
   try {
     const response = await axios.get(`https://geo.api.gouv.fr/communes?codePostal=${cp}`);
-    const valid = response.data.length > 0;
+    setCommunes(response.data);
     
-    if (valid) {
-      // Prendre la première commune trouvée
-      setVille(response.data[0].nom);
+    if (response.data.length > 0) {
+      if (response.data.length === 1) {
+        setVille(response.data[0].nom);
+        setShowCommunesDropdown(false);
+      } else {
+        setShowCommunesDropdown(true);
+      }
+      return true;
     }
+    return false;
     
-    return valid;
   } catch (error) {
     console.error("Erreur validation code postal:", error);
     return false;
@@ -961,58 +970,81 @@ const CompleteProfile = () => {
             )}
           </div>
 
-          {/* Code Postal & Ville */}
-          <div className="flex space-x-2">
-            <div className="w-1/2">
-              <label className="block text-xs font-medium text-gray-700">
-                Code Postal <span className="text-red-700">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={codePostal}
-                  onChange={async (e) => {
-                    const value = e.target.value.replace(/\D/g, '').slice(0, 5);
-                    setCodePostal(value);
-                    
-                    if (value.length === 5) {
-                      await validateCodePostal(value); // Déclencher la validation immédiate
-                    }
-                  }}
-                  placeholder="75001"
-                  className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
-                    errors.codePostal ? "border-red-500" : "border-gray-300"
-                  }`}
-                  inputMode="numeric"
-                />
-                {loadingCodePostal && (
-                  <div className="absolute right-2 top-2">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-                  </div>
-                )}
-              </div>
-              {errors.codePostal && (
-                <p className="text-red-600 text-xs">{errors.codePostal}</p>
-              )}
-            </div>
-            <div className="w-1/2">
-              <label className="block text-xs font-medium text-gray-700">
-                Ville <span className="text-red-700">*</span>
-              </label>
+          {/* Code Postal */}
+          <div className="relative">
+            <label className="block text-xs font-medium text-gray-700">
+              Code Postal <span className="text-red-700">*</span>
+            </label>
+            <div className="relative">
               <input
                 type="text"
-                value={ville}
-                onChange={e => setVille(e.target.value)}
-                placeholder="Versailles"
+                value={codePostal}
+                onChange={async (e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 5);
+                  setCodePostal(value);
+                  setVille('');
+                  setCommunes([]);
+
+                  if (value.length === 5) {
+                    await validateCodePostal(value);
+                  } else {
+                    setShowCommunesDropdown(false);
+                  }
+                }}
+                placeholder="75001"
                 className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
-                  errors.ville ? "border-red-500" : "border-gray-300"
+                  errors.codePostal ? "border-red-500" : "border-gray-300"
                 }`}
-                disabled={loadingCodePostal} // Désactiver pendant le chargement
+                inputMode="numeric"
               />
-              {errors.ville && (
-                <p className="text-red-600 text-xs">{errors.ville}</p>
+              {loadingCodePostal && (
+                <div className="absolute right-2 top-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
+                </div>
               )}
             </div>
+            {errors.codePostal && (
+              <p className="text-red-600 text-xs">{errors.codePostal}</p>
+            )}
+          </div>
+
+          {/*  Ville */}
+          <div className="relative">
+            <label className="block text-xs font-medium text-gray-700">
+              Ville <span className="text-red-700">*</span>
+            </label>
+            <input
+              type="text"
+              value={ville}
+              onChange={e => {
+                setVille(e.target.value);
+                setShowCommunesDropdown(false);
+              }}
+              onFocus={() => communes.length > 1 && setShowCommunesDropdown(true)}
+              placeholder="Sélectionnez une ville"
+              className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
+                errors.ville ? "border-red-500" : "border-gray-300"
+              }`}
+            />
+            
+            {showCommunesDropdown && communes.length > 1 && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-40 overflow-y-auto">
+                {communes.map((commune) => (
+                  <div
+                    key={commune.code}
+                    className="px-3 py-2 text-xs hover:bg-gray-100 cursor-pointer"
+                    onClick={() => {
+                      setVille(commune.nom);
+                      setShowCommunesDropdown(false);
+                    }}
+                  >
+                    {commune.nom}
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {errors.ville && <p className="text-red-600 text-xs">{errors.ville}</p>}
           </div>
 
           {/* Description */}
