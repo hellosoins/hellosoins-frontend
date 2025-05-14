@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/Button';
 import { ChevronLeft, Settings, MapPinHouse, List, ChevronRight } from 'lucide-react';
 
 export const Header = ({ currentView, setCurrentView }) => (
