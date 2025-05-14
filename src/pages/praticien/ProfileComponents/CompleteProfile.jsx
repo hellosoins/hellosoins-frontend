@@ -477,7 +477,7 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
   // 2. Date maxi pour 18 ans (vous l’avez déjà)
   const MAX_ADULT_DATE = (() => {
     const d = new Date();
-    d.setFullYear(d.getFullYear() - 15);
+    d.setFullYear(d.getFullYear() - 18);
     return d.toISOString().slice(0, 10);
   })();
 
@@ -543,10 +543,10 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
     }));
   } 
   else if (sel > maxAdult) {
-    // moins de 15 ans
+    // moins de 18 ans
     setErrors(prev => ({
       ...prev,
-      dateNaissance: "Vous devez avoir au moins 15 ans.",
+      dateNaissance: "L'âge légal pour exercer une pratique professionnelle est d'au moins 18 ans.",
     }));
   }
   };
@@ -910,20 +910,20 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
                 type="text"
                 value={siren}
                 onChange={(e) => {
-  const raw = e.target.value.replace(/\D/g, "").slice(0, 9);
-  setSiren(raw);
-  setSiretSuccess(false);
-  setEtablissements([]);
-  setSelectedEtablissement(null);
+                  const raw = e.target.value.replace(/\D/g, "").slice(0, 9);
+                  setSiren(raw);
+                  setSiretSuccess(false);
+                  setEtablissements([]);
+                  setSelectedEtablissement(null);
 
-  if (!isTouched) {
-    setIsTouched(true);  // L'utilisateur a touché le champ
-  }
+                  if (!isTouched) {
+                    setIsTouched(true);  // L'utilisateur a touché le champ
+                  }
 
-  if (raw.length < 9) {
-    setSiretError("Le SIREN doit contenir exactement 9 chiffres");
-  }
-}}
+                  if (raw.length < 9) {
+                    setSiretError("Le SIREN doit contenir exactement 9 chiffres");
+                  }
+                }}
                 placeholder="123456789"
                 className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
                   siretError ? "border-red-500" : "border-gray-300"

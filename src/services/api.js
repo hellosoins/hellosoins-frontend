@@ -3,10 +3,7 @@ import { user_test } from '@/components/common/constant';
 import { jwtDecode } from 'jwt-decode';
 
 const API_URL = import.meta.env.VITE_API_BASE_URL;
-export {
-  API_URL
-}
-
+export { API_URL };
 
 // Login avec mot de passe
 export const login_user = async (user_mail, mot_de_passe) => {
@@ -20,7 +17,7 @@ export const login_user = async (user_mail, mot_de_passe) => {
   } catch (error) {
     // Gestion d'erreur améliorée
     const errorMessage = error.response?.data?.message || error.message;
-    console.error("Erreur lors de la connexion:", errorMessage);
+    console.error('Erreur lors de la connexion:', errorMessage);
     throw new Error(errorMessage);
   }
 };
@@ -33,7 +30,10 @@ export async function login_by_email(mail) {
     return response.data;
   } catch (error) {
     const errorMessage = error.response?.data?.message || error.message;
-    console.error("Erreur lors de la connexion sans mot de passe:", errorMessage);
+    console.error(
+      'Erreur lors de la connexion sans mot de passe:',
+      errorMessage
+    );
     throw new Error(errorMessage);
   }
 }
@@ -61,55 +61,54 @@ async function handlePasswordlessLogin(email) {
 }
 */
 
-
 export const api_login_test = async (user_mail, mot_de_passe) => {
   try {
     console.log({
       test: user_mail,
       Ttest: user_test.user_mail,
-    })
-    if( user_mail == user_test.user_mail ){
-      if( mot_de_passe == user_test.mot_de_passe ){
+    });
+    if (user_mail == user_test.user_mail) {
+      if (mot_de_passe == user_test.mot_de_passe) {
         return {
-          message: "Connexion reussi !",
-          token: "fake_token_21353wgoi42sqp",
-          user: user_test
-        }
+          message: 'Connexion reussi !',
+          token: 'fake_token_21353wgoi42sqp',
+          user: user_test,
+        };
       }
       throw {
-        message: "Mot de passe incorrect !",
-      }
+        message: 'Mot de passe incorrect !',
+      };
     }
     throw {
-      message: "Adresse email incorrect !",
-    }
+      message: 'Adresse email incorrect !',
+    };
   } catch (error) {
-    console.error("Erreur lors de la connexion", error);
+    console.error('Erreur lors de la connexion', error);
     throw error;
   }
 };
 
-export const getProfilPraticien = () =>{
-
+export const getProfilPraticien = () => {
   const data_user = {
-    user_name: "Jean",
-    user_forname: "Bosco",
-    user_phone: "+1 (555) 123-22222",
-    user_mail: "jean@mail.jean",
-    photo_url: "https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-3.jpg",
-    siret_number: "12345678",
-    ville: "Tananarive",
+    user_name: 'Jean',
+    user_forname: 'Bosco',
+    user_phone: '+1 (555) 123-22222',
+    user_mail: 'jean@mail.jean',
+    photo_url:
+      'https://demos.creative-tim.com/test/corporate-ui-dashboard/assets/img/team-3.jpg',
+    siret_number: '12345678',
+    ville: 'Tananarive',
     xp: 10,
-    specialite:["Dermatologue", "Acupuncture", "Massage traditionnelle"],
-    consultation: ["Au cabinet", "Domicile"],
-    total_rdv: 22, 
-  }
+    specialite: ['Dermatologue', 'Acupuncture', 'Massage traditionnelle'],
+    consultation: ['Au cabinet', 'Domicile'],
+    total_rdv: 22,
+  };
 
   // Appel axiosa implementer
   return data_user;
-}
+};
 
-export const register_user = async(requestData) => {
+export const register_user = async (requestData) => {
   try {
     const response = await axios.post(`${API_URL}/register`, requestData);
     return response.data;
@@ -118,7 +117,7 @@ export const register_user = async(requestData) => {
     console.error("Erreur lors de l'inscription", errorMessage);
     throw errorMessage;
   }
-}
+};
 
 // Envoi du code de validation
 export const sendValidationCode = async ({ mail, phone_number, name }) => {
@@ -134,7 +133,7 @@ export const sendValidationCode = async ({ mail, phone_number, name }) => {
     return response.data;
   } catch (error) {
     const errorMessage = error.response?.data?.message || error.message;
-    console.error('Erreur lors de l\'envoi du code :', errorMessage);
+    console.error("Erreur lors de l'envoi du code :", errorMessage);
     throw new Error(errorMessage);
   }
 };
@@ -142,10 +141,10 @@ export const sendValidationCode = async ({ mail, phone_number, name }) => {
 // Vérification du code de validation
 export const verifyValidationCode = async ({ mail, code }) => {
   try {
-    const response = await axios.post(
-      `${API_URL}/validation/verify-code`,
-      { mail, code }
-    );
+    const response = await axios.post(`${API_URL}/validation/verify-code`, {
+      mail,
+      code,
+    });
 
     return response.data;
   } catch (error) {
@@ -155,14 +154,10 @@ export const verifyValidationCode = async ({ mail, code }) => {
   }
 };
 
-
 // Récupération du numéro et du nom via l'email
 export const getNumberAndName = async (mail) => {
   try {
-    const response = await axios.post(
-      `${API_URL}/auth/get-mobile`,
-      { mail }
-    );
+    const response = await axios.post(`${API_URL}/auth/get-mobile`, { mail });
 
     if (!response.data.success) {
       throw new Error('Échec de la récupération du mobile et du nom');
@@ -175,21 +170,36 @@ export const getNumberAndName = async (mail) => {
     };
   } catch (error) {
     const errorMessage = error.response?.data?.message || error.message;
-    console.error('Erreur lors de la récupération du mobile et du nom :', errorMessage);
+    console.error(
+      'Erreur lors de la récupération du mobile et du nom :',
+      errorMessage
+    );
     throw new Error(errorMessage);
   }
 };
 
+export async function getSiretData(siret) {
+  try {
+    const response = await fetch(`/api/siret/${siret}`);
+    if (!response.ok)
+      throw new Error('Erreur lors de la récupération du SIRET');
+    return await response.json();
+  } catch (error) {
+    console.error('Erreur API SIRET:', error);
+    throw error;
+  }
+}
+
 export const formatNumero = (numero) => {
   // 1. On ne conserve que les chiffres
-  const digits = numero.replace(/\D/g, "");
-  
+  const digits = numero.replace(/\D/g, '');
+
   // 2. On prend les 9 derniers chiffres
   const lastNine = digits.slice(-9);
-  
+
   // 3. On préfixe d’un seul zéro
-  const masked = "0" + lastNine;
-  
+  const masked = '0' + lastNine;
+
   // 4. On groupe par paires et on joint avec un espace
-  return masked.match(/.{1,2}/g)?.join(" ") ?? masked;
-}
+  return masked.match(/.{1,2}/g)?.join(' ') ?? masked;
+};

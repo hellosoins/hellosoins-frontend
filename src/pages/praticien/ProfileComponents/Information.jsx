@@ -8,6 +8,32 @@ import {
 } from '@/services/profile-service';
 import { formatPhoneNumber } from 'react-phone-number-input'
 import { formatNumero } from '@/services/api';
+import axios from 'axios';
+import { useQuery as useSirenQuery } from '@tanstack/react-query';
+
+const fetchSirenInfo = async (siren) => {
+  const proxyUrl = import.meta.env.VITE_SIREN_API_PROXY;
+  const baseUrl = import.meta.env.VITE_SIREN_API_BASE_URL;
+  const secret = import.meta.env.VITE_SIREN_API_SECRET;
+
+  const response = await axios.get(
+    `${proxyUrl}${baseUrl}/${siren}`,
+    {
+      headers: {
+        'X-Client-Secret': secret,
+        'X-Requested-With': 'XMLHttpRequest',
+      }
+    }
+  );
+
+  return response.data;
+};
+
+const getSirenFromSiret = (siret) => {
+  if (!siret) return null;
+  const cleaned = siret.replace(/\D/g, '');
+  return cleaned.substring(0, 9);
+};
 
 const Information = ({ practitionerData }) => {
   // États pour les données fetchées
@@ -66,6 +92,17 @@ const Information = ({ practitionerData }) => {
     return <p className="text-red-500">{error}</p>
   }
 
+  const [selectedEtablissement, setSelectedEtablissement] = useState(null);
+  const siret = practitionerData?.practitioner_info?.siret || '';
+  const siren = getSirenFromSiret(siret);
+
+  const { data: sirenData, isLoading: isSirenLoading, error: sirenError } = useSirenQuery({
+    queryKey: ['siren-data', siren],
+    queryFn: () => fetchSirenInfo(siren),
+    enabled: !!siren, // éviter l'appel si siren est vide
+  });
+
+
   return (
     <div className="grid grid-cols-1 gap-4 mb-4 md:grid-cols-2">
       {/* Infos pro */}
@@ -121,6 +158,27 @@ const Information = ({ practitionerData }) => {
               {formatSIRET(practitionerData.practitioner_info.siret)}
             </div>
           </div>
+          <div className="flex flex-col md:flex-row mb-1">
+            <div className="w-full md:w-1/3 pr-2 font-semibold text-left">
+              SIREN :
+            </div>
+            <div className="w-full md:w-2/3">
+              {siren || 'Non disponible'}
+            </div>
+          </div>
+          <div className="flex flex-col md:flex-row mb-1">
+            <div className="w-full md:w-1/3 pr-2 font-semibold text-left">
+              Établissement :
+            </div>
+            <div className="w-full md:w-2/3 text-gray-800">
+              {isSirenLoading ? (
+                'Chargement...'
+              ) : sirenError ? (
+                <span className="text-red-500 text-xs">{sirenError.message}</span>
+              ) : sirenData?.unite_legale?.denomination || 'Non trouvé'}
+            </div>
+          </div>
+
         </div>
       </div>
 
