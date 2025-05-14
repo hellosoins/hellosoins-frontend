@@ -5,7 +5,7 @@ import { MonthView } from './componentAgenda/MonthView';
 import { WeekView } from './componentAgenda/WeekView';
 import { DayView } from './componentAgenda/DayView';
 import { HoverTooltip } from './componentAgenda/HoverTooltip';
-import { scheduleData } from './componentAgenda/ScheduleConfig';
+import { scheduleData } from './componentAgenda/scheduleConfig';
 import { 
   startOfDay, 
   addMonths, 
