@@ -20,6 +20,10 @@ jobs:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Deploy
+        env:
+          VITE_SIREN_API_SECRET: ${{ secrets.VITE_SIREN_API_SECRET }}
+          VITE_SIREN_API_PROXY: ${{ secrets.VITE_SIREN_API_PROXY }}
+          VITE_SIREN_API_BASE_URL: ${{ secrets.VITE_SIREN_API_BASE_URL }}
         run: |
           BRANCH_NAME=${{ github.ref_name }}
 
@@ -39,8 +43,11 @@ jobs:
             git fetch origin
             git reset --hard origin/${BRANCH_NAME}
 
-            echo "→ Création du fichier .env (non suivi par git)"
+            echo "→ Création du fichier .env"
             echo "VITE_API_BASE_URL=${API_URL}" > .env
+            echo "VITE_SIREN_API_SECRET=$VITE_SIREN_API_SECRET" >> .env
+            echo "VITE_SIREN_API_PROXY=$VITE_SIREN_API_PROXY" >> .env
+            echo "VITE_SIREN_API_BASE_URL=$VITE_SIREN_API_BASE_URL" >> .env
 
             echo "→ Reconstruction des conteneurs Docker"
             docker-compose down
