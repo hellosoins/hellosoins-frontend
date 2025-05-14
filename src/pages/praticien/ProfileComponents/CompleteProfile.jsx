@@ -81,6 +81,7 @@ const CompleteProfile = () => {
   const [adresseValide, setAdresseValide] = useState(false);
   const [loadingCodePostal, setLoadingCodePostal] = useState(false);
   const [loadingAdresse, setLoadingAdresse] = useState(false);
+  const [touchedVille, setTouchedVille] = useState(false);
 
   // Sélections actuelles (IDs)
   const [patientTypeIds, setPatientTypeIds] = useState([]);
@@ -230,6 +231,7 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
     }
   }, [codePostal, ville]); // Déclencher quand le code postal change
 
+  
 // GESTION NUMERO-DE-SIREN
   useEffect(() => {
     if (isTouched && siren.length === 9) {
@@ -1066,12 +1068,17 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
                 setVille(e.target.value);
                 setShowCommunesDropdown(false);
               }}
-              onFocus={() => communes.length > 1 && setShowCommunesDropdown(true)}
+              onFocus={() => {
+                communes.length > 1 && setShowCommunesDropdown(true);
+                setTouchedVille(true); // Facultatif ici si tu préfères valider au blur
+              }}
+              onBlur={() => setTouchedVille(true)}
               placeholder="Sélectionnez une ville"
               className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
-                errors.ville ? "border-red-500" : "border-gray-300"
+                errors.ville && touchedVille ? "border-red-500" : "border-gray-300"
               }`}
             />
+
             
             {showCommunesDropdown && communes.length > 1 && (
               <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-40 overflow-y-auto">
