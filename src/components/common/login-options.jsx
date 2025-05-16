@@ -10,6 +10,7 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/Dialog";
+import { Loader } from "@/components/ui/Loader"; 
 import Logo from './icone/googleIcon.png';
 
 import { login_by_email, getNumberAndName, sendValidationCode } from '@/services/api';
@@ -18,6 +19,7 @@ import { useNavigate } from 'react-router-dom';
 const LoginOptions = () => {
   const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [loading, setLoading] = React.useState(false); 
 
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -28,10 +30,7 @@ const LoginOptions = () => {
         }).then(res => res.json());
         const email = profile.email;
 
-        // Authenticate user
         const result = await login_by_email(email);
-
-        // Fetch user details
         const userInfo = await getNumberAndName(email);
         const userDetails = {
           name: userInfo.name,
@@ -40,12 +39,12 @@ const LoginOptions = () => {
           token: result.token
         };
 
-        // Send validation code and navigate
         await sendValidationCode({
           mail: userDetails.email,
           phone_number: userDetails.phoneNumber,
           name: userDetails.name
         });
+
         navigate('/code', {
           state: {
             name: userDetails.name,
@@ -57,16 +56,31 @@ const LoginOptions = () => {
       } catch (err) {
         console.error('Erreur login sans mot de passe :', err);
         setDialogOpen(true);
+      } finally {
+        setLoading(false); 
       }
     },
     onError: (error) => {
       console.error('Erreur lors de la connexion avec Google :', error);
+      setLoading(false); 
     },
   });
 
+  const handleGoogleLogin = () => {
+    setLoading(true); 
+    login();
+  };
+
   return (
     <>
-      {/* Error dialog */}
+      {/* Affichage du loader */}
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white bg-opacity-75">
+          <Loader />
+        </div>
+      )}
+
+      {/* Dialog d’erreur */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -83,17 +97,18 @@ const LoginOptions = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Google login button */}
+      {/* Bouton Google */}
       <div className="grid grid-cols-1 gap-4">
         <Button
           variant="outline"
           className="text-sm w-full rounded-full border-2 border-gray-700 flex items-center justify-center"
-          onClick={() => login()}
+          onClick={handleGoogleLogin} // 👈 Nouveau handler
         >
           <img src={Logo} alt="Google Icon" className="mr-2 w-6 h-6" />
           <span>Continuer avec Google</span>
         </Button>
       </div>
+
       <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
         <span className="relative z-10 bg-background px-2 text-sm text-muted-foreground">
           Ou
