@@ -9,7 +9,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/Dialog";
-import { 
+import {
   ArrowLeftCircle,
   Linkedin,
   Facebook,
@@ -94,10 +94,10 @@ const CompleteProfile = () => {
   const [siretError, setSiretError] = useState("");
   const [siretSuccess, setSiretSuccess] = useState(false);
   const [denomination, setDenomination] = useState("");
-// Siret actuellement sélectionné dans le dropdown
-const [selectedSiret, setSelectedSiret] = useState("");
-  
-// FETCH DES DONNEES ENREGISTREES
+  // Siret actuellement sélectionné dans le dropdown
+  const [selectedSiret, setSelectedSiret] = useState("");
+
+  // FETCH DES DONNEES ENREGISTREES
   useEffect(() => {
     const fetchOptions = async () => {
       const token = localStorage.getItem("authToken");
@@ -178,12 +178,12 @@ const [selectedSiret, setSelectedSiret] = useState("");
     fetchPractitioner();
   }, []);
 
-// gestion commune 
-const [communes, setCommunes] = useState([]);
-const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
+  // gestion commune 
+  const [communes, setCommunes] = useState([]);
+  const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
 
 
-// MISE A JOUR % DE COMPLETION PROFIL
+  // MISE A JOUR % DE COMPLETION PROFIL
   useEffect(() => {
     const fields = [
       profilePic ? 1 : 0,
@@ -231,8 +231,8 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
     }
   }, [codePostal, ville]); // Déclencher quand le code postal change
 
-  
-// GESTION NUMERO-DE-SIREN
+
+  // GESTION NUMERO-DE-SIREN
   useEffect(() => {
     if (isTouched && siren.length === 9) {
       setSiretError("");
@@ -299,7 +299,7 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
 
 
 
-// GESTION DU SAISIE-DE-DESCRIPTION
+  // GESTION DU SAISIE-DE-DESCRIPTION
   useEffect(() => {
     if (!isTyping || !targetDescription) return;
 
@@ -344,7 +344,7 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
       });
     }, 30);
   };
-  
+
 
   useEffect(() => {
     return () => {
@@ -353,7 +353,7 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
   }, []);
 
 
-// GESTION VALIDATION DES CHAMPS OBLIGATOIRES
+  // GESTION VALIDATION DES CHAMPS OBLIGATOIRES
   const validateFields = async () => {
     const newErrors = {};
     if (!profilePic) newErrors.profilePic = "La photo de profil est requise.";
@@ -364,7 +364,7 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
 
     if (!prenom.trim()) newErrors.prenom = "Le prénom est requis.";
 
-    if (!dateNaissance.trim())newErrors.dateNaissance = "La date de naissance est requise.";
+    if (!dateNaissance.trim()) newErrors.dateNaissance = "La date de naissance est requise.";
 
     if (!email.trim()) newErrors.email = "L'email est requis.";
 
@@ -372,7 +372,7 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
 
     if (!mobile.trim()) newErrors.mobile = "Le numéro mobile est requis.";
 
-    if (!adresse.trim())newErrors.adresse = "L'adresse est requise.";
+    if (!adresse.trim()) newErrors.adresse = "L'adresse est requise.";
 
     if (!codePostal.trim()) {
       newErrors.codePostal = "Le code postal est requis.";
@@ -386,76 +386,76 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
     if (!ville.trim()) newErrors.ville = "La ville est requise.";
 
     if (!siren.trim()) {
-  newErrors.siret = "Le numéro de SIREN est requis.";
-} else if (siren.replace(/\s/g, "").length !== 9) {
-  newErrors.siret = "Le SIREN doit contenir exactement 9 chiffres";
-}
+      newErrors.siret = "Le numéro de SIREN est requis.";
+    } else if (siren.replace(/\s/g, "").length !== 9) {
+      newErrors.siret = "Le SIREN doit contenir exactement 9 chiffres";
+    }
 
-    if (!description.trim())newErrors.description = "La description est requise.";
+    if (!description.trim()) newErrors.description = "La description est requise.";
 
     if (consultationTypes.length === 0) newErrors.consultationTypes = "Veuillez sélectionner au moins un type de consultation.";
-    
+
     if (patientTypeIds.length === 0) newErrors.patientTypes = "Veuillez sélectionner au moins un type de patient.";
-    
-    if (paymentMethodIds.length === 0)newErrors.paymentMethods = "Veuillez sélectionner au moins un moyen de paiement.";
-    
+
+    if (paymentMethodIds.length === 0) newErrors.paymentMethods = "Veuillez sélectionner au moins un moyen de paiement.";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  
-  const validateCodePostal = async (cp) => {
-  setLoadingCodePostal(true);
-  try {
-    const response = await axios.get(`https://geo.api.gouv.fr/communes?codePostal=${cp}`);
-    setCommunes(response.data);
-    
-    if (response.data.length > 0) {
-      if (response.data.length === 1) {
-        setVille(response.data[0].nom);
-        setShowCommunesDropdown(false);
-      } else {
-        setShowCommunesDropdown(true);
-      }
-      return true;
-    }
-    return false;
-    
-  } catch (error) {
-    console.error("Erreur validation code postal:", error);
-    return false;
-  } finally {
-    setLoadingCodePostal(false);
-  }
-};
-  const validateAdresse = async (adresseSaisie, cp) => {
-  setLoadingAdresse(true);
-  try {
-    const { data } = await axios.get(`https://api-adresse.data.gouv.fr/search/`, {
-      params: {
-        q: adresseSaisie,
-        postcode: cp,
-        autocomplete: 0,
-        limit: 1
-      }
-    });
 
-    if (data.features?.length > 0) {
-      const props = data.features[0].properties;
-      // Mettre à jour l'adresse formatée ET la ville
-      setAdresse(props.name);
-      setVille(props.city);
-      setCodePostal(props.postcode);
-      return true;
+  const validateCodePostal = async (cp) => {
+    setLoadingCodePostal(true);
+    try {
+      const response = await axios.get(`https://geo.api.gouv.fr/communes?codePostal=${cp}`);
+      setCommunes(response.data);
+
+      if (response.data.length > 0) {
+        if (response.data.length === 1) {
+          setVille(response.data[0].nom);
+          setShowCommunesDropdown(false);
+        } else {
+          setShowCommunesDropdown(true);
+        }
+        return true;
+      }
+      return false;
+
+    } catch (error) {
+      console.error("Erreur validation code postal:", error);
+      return false;
+    } finally {
+      setLoadingCodePostal(false);
     }
-    return false;
-  } catch (error) {
-    console.error("Erreur validation adresse :", error);
-    return false;
-  } finally {
-    setLoadingAdresse(false);
-  }
-};
-  
+  };
+  const validateAdresse = async (adresseSaisie, cp) => {
+    setLoadingAdresse(true);
+    try {
+      const { data } = await axios.get(`https://api-adresse.data.gouv.fr/search/`, {
+        params: {
+          q: adresseSaisie,
+          postcode: cp,
+          autocomplete: 0,
+          limit: 1
+        }
+      });
+
+      if (data.features?.length > 0) {
+        const props = data.features[0].properties;
+        // Mettre à jour l'adresse formatée ET la ville
+        setAdresse(props.name);
+        setVille(props.city);
+        setCodePostal(props.postcode);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Erreur validation adresse :", error);
+      return false;
+    } finally {
+      setLoadingAdresse(false);
+    }
+  };
+
   function formatDateFr(dateString) {
     if (!dateString) return "";
     const date = new Date(dateString);
@@ -465,7 +465,7 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
       year: "numeric",
     }).format(date); // ex. "05 janvier 2024"
   }
-// GESTION DES AUTRES CHANGEMENT OU ETAT : CHECKBOX, DROP PHOTO, DATE
+  // GESTION DES AUTRES CHANGEMENT OU ETAT : CHECKBOX, DROP PHOTO, DATE
   const profilePicRef = useRef();
   const handleModifyProfile = () => navigate("/profil");
   const TODAY = new Date().toISOString().slice(0, 10);
@@ -530,34 +530,34 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
   const validateDate = () => {
     if (dateNaissance.length !== 10) return;  // pas de date complète → rien
 
-  const sel = new Date(dateNaissance);
-  const min = new Date(MIN_DATE);
-  const maxAdult = new Date(MAX_ADULT_DATE);
+    const sel = new Date(dateNaissance);
+    const min = new Date(MIN_DATE);
+    const maxAdult = new Date(MAX_ADULT_DATE);
 
     // Réinitialisation du message d’erreur
-  setErrors(prev => ({ ...prev, dateNaissance: "" }));
+    setErrors(prev => ({ ...prev, dateNaissance: "" }));
 
-  if (sel < min) {
-    // date trop ancienne, on signale mais on ne change pas dateNaissance
-    setErrors(prev => ({
-      ...prev,
-      dateNaissance: `Date de naissance trop ancienne pour exercer.`,
-    }));
-  } 
-  else if (sel > maxAdult) {
-    // moins de 18 ans
-    setErrors(prev => ({
-      ...prev,
-      dateNaissance: "L'âge légal pour exercer une pratique professionnelle est d'au moins 18 ans.",
-    }));
-  }
+    if (sel < min) {
+      // date trop ancienne, on signale mais on ne change pas dateNaissance
+      setErrors(prev => ({
+        ...prev,
+        dateNaissance: `Date de naissance trop ancienne pour exercer.`,
+      }));
+    }
+    else if (sel > maxAdult) {
+      // moins de 18 ans
+      setErrors(prev => ({
+        ...prev,
+        dateNaissance: "L'âge légal pour exercer une pratique professionnelle est d'au moins 18 ans.",
+      }));
+    }
   };
-  
 
-// ENVOIE DU FORMULAIRE FINAL POUR ENREGISTREMENT DES MODIFICATIONS
+
+  // ENVOIE DU FORMULAIRE FINAL POUR ENREGISTREMENT DES MODIFICATIONS
   const handleSubmitForm = async () => {
     const isValid = await validateFields();
-    if(isValid == false)return; // Verification de toute les champs
+    if (isValid == false) return; // Verification de toute les champs
     validateDate();
 
     // Si une erreur persiste, on bloque
@@ -774,9 +774,8 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
             <select
               value={civilite}
               onChange={(e) => setCivilite(e.target.value)}
-              className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
-                errors.civilite ? "border-red-500" : "border-gray-300"
-              }`}
+              className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${errors.civilite ? "border-red-500" : "border-gray-300"
+                }`}
             >
               <option>Monsieur</option>
               <option>Madame</option>
@@ -797,9 +796,8 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
               value={nom}
               onChange={(e) => setNom(e.target.value)}
               placeholder="Votre nom"
-              className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
-                errors.nom ? "border-red-500" : "border-gray-300"
-              }`}
+              className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${errors.nom ? "border-red-500" : "border-gray-300"
+                }`}
             />
             {errors.nom && <p className="text-red-600 text-xs">{errors.nom}</p>}
           </div>
@@ -814,9 +812,8 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
               value={prenom}
               onChange={(e) => setPrenom(e.target.value)}
               placeholder="Votre prenom"
-              className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
-                errors.prenom ? "border-red-500" : "border-gray-300"
-              }`}
+              className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${errors.prenom ? "border-red-500" : "border-gray-300"
+                }`}
             />
             {errors.prenom && (
               <p className="text-red-600 text-xs">{errors.prenom}</p>
@@ -839,9 +836,8 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
                 setErrors(prev => ({ ...prev, dateNaissance: "" }));
               }}
               onBlur={validateDate}
-              className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
-                errors.dateNaissance ? "border-red-500" : "border-gray-300"
-              }`}
+              className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${errors.dateNaissance ? "border-red-500" : "border-gray-300"
+                }`}
             />
             {errors.dateNaissance && (
               <p className="text-red-600 text-xs mt-1">{errors.dateNaissance}</p>
@@ -859,9 +855,8 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="exemple@gmail.com"
-              className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
-                errors.email ? "border-red-500" : "border-gray-300"
-              }`}
+              className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${errors.email ? "border-red-500" : "border-gray-300"
+                }`}
             />
             {errors.email && (
               <p className="text-red-600 text-xs">{errors.email}</p>
@@ -900,7 +895,7 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
               <p className="text-red-600 text-xs">{errors.mobile}</p>
             )}
           </div>
-          
+
           {/* SIREN */}
           <div ref={sirenRef}>
             <label className="block text-xs font-medium text-gray-700">
@@ -927,9 +922,8 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
                   }
                 }}
                 placeholder="123456789"
-                className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
-                  siretError ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${siretError ? "border-red-500" : "border-gray-300"
+                  }`}
                 inputMode="numeric"
               />
             </div>
@@ -939,52 +933,52 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
               </p>
             )}
 
-            { siretSuccess && etablissements.length > 1 && (
-            <div className="mt-2">
-              <label className="block text-xs font-medium text-gray-700">
-                Choisissez un établissement
-              </label>
-              <select
-                className="mt-1 block w-full text-xs rounded border px-3 py-2"
-                value={selectedEtablissement?.siret || ""}
-                onChange={(e) => {
-                  const etab = etablissements.find((x) => x.siret === e.target.value);
-                  selectEtablissement(etab);
-                }}
-              >
-                {etablissements.map((etab) => (
-                  <option key={etab.siret} value={etab.siret}>
-                    {[etab.numero_voie, etab.type_voie, etab.libelle_voie, etab.code_postal, etab.libelle_commune]
-                    .filter(Boolean)
-                    .join(" ")} – {etab.etablissement_siege ? "Siège" : `NIC ${etab.nic}`}
+            {siretSuccess && etablissements.length > 1 && (
+              <div className="mt-2">
+                <label className="block text-xs font-medium text-gray-700">
+                  Choisissez un établissement
+                </label>
+                <select
+                  className="mt-1 block w-full text-xs rounded border px-3 py-2"
+                  value={selectedEtablissement?.siret || ""}
+                  onChange={(e) => {
+                    const etab = etablissements.find((x) => x.siret === e.target.value);
+                    selectEtablissement(etab);
+                  }}
+                >
+                  {etablissements.map((etab) => (
+                    <option key={etab.siret} value={etab.siret}>
+                      {[etab.numero_voie, etab.type_voie, etab.libelle_voie, etab.code_postal, etab.libelle_commune]
+                        .filter(Boolean)
+                        .join(" ")} – {etab.etablissement_siege ? "Siège" : `NIC ${etab.nic}`}
 
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             { // Cas 1 : erreur différente de longueur → toujours affichée
-            siretError &&
-            siretError !== "Le SIREN doit contenir exactement 9 chiffres" && (
-              <p className="text-red-500 text-xs">{siretError}</p>
-            )
-          }
-          { // Cas 2 : erreur de longueur → uniquement si on n’est PAS focalisé
-            siretError === "Le SIREN doit contenir exactement 9 chiffres" &&
-            !isSirenFocused && (
-              <p className="text-red-500 text-xs">{siretError}</p>
-            )
-          }
+              siretError &&
+              siretError !== "Le SIREN doit contenir exactement 9 chiffres" && (
+                <p className="text-red-500 text-xs">{siretError}</p>
+              )
+            }
+            { // Cas 2 : erreur de longueur → uniquement si on n’est PAS focalisé
+              siretError === "Le SIREN doit contenir exactement 9 chiffres" &&
+              !isSirenFocused && (
+                <p className="text-red-500 text-xs">{siretError}</p>
+              )
+            }
 
             {siretSuccess && siretDisplayDetails && (
-            <div className="mt-2 p-2 bg-gray-100 text-xs rounded">
-              <p><strong>Entreprise :</strong> {denomination}</p>
-              <p><strong>SIRET :</strong> {siret}</p>
-              <p><strong>Adresse :</strong> {adresse}</p>
-              <p><strong>Ville :</strong> {ville} {codePostal}</p>
-            </div>
-          )}
+              <div className="mt-2 p-2 bg-gray-100 text-xs rounded">
+                <p><strong>Entreprise :</strong> {denomination}</p>
+                <p><strong>SIRET :</strong> {siret}</p>
+                <p><strong>Adresse :</strong> {adresse}</p>
+                <p><strong>Ville :</strong> {ville} {codePostal}</p>
+              </div>
+            )}
 
           </div>
 
@@ -1000,9 +994,8 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
                 value={adresse}
                 onChange={(e) => setAdresse(e.target.value)}
                 placeholder="15 Rue des Lilas"
-                className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
-                  errors.adresse ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${errors.adresse ? "border-red-500" : "border-gray-300"
+                  }`}
               />
               {loadingAdresse && (
                 <div className="absolute right-2 top-2">
@@ -1040,9 +1033,8 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
                   }
                 }}
                 placeholder="75001"
-                className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
-                  errors.codePostal ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${errors.codePostal ? "border-red-500" : "border-gray-300"
+                  }`}
                 inputMode="numeric"
               />
               {loadingCodePostal && (
@@ -1074,12 +1066,11 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
               }}
               onBlur={() => setTouchedVille(true)}
               placeholder="Sélectionnez une ville"
-              className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
-                errors.ville && touchedVille ? "border-red-500" : "border-gray-300"
-              }`}
+              className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${errors.ville && touchedVille ? "border-red-500" : "border-gray-300"
+                }`}
             />
 
-            
+
             {showCommunesDropdown && communes.length > 1 && (
               <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded shadow-lg max-h-40 overflow-y-auto">
                 {communes.map((commune) => (
@@ -1096,7 +1087,7 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
                 ))}
               </div>
             )}
-            
+
             {errors.ville && <p className="text-red-600 text-xs">{errors.ville}</p>}
           </div>
 
@@ -1122,9 +1113,8 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Exemple : Spécialiste en [votre spécialité], je propose..."
               disabled={isTyping}
-              className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${
-                errors.description ? "border-red-500" : "border-gray-300"
-              }`}
+              className={`mt-1 block w-full text-xs rounded border px-3 py-2 ${errors.description ? "border-red-500" : "border-gray-300"
+                }`}
             />
             {errors.description && (
               <p className="text-red-600 text-xs">{errors.description}</p>
@@ -1198,8 +1188,8 @@ const [showCommunesDropdown, setShowCommunesDropdown] = useState(false);
                             setPatientTypeIds((prevIds) => {
                               const nextIds = isChecked
                                 ? prevIds.filter(
-                                    (id) => id !== opt.id_patient_type
-                                  )
+                                  (id) => id !== opt.id_patient_type
+                                )
                                 : [...prevIds, opt.id_patient_type];
 
                               // Vérifier si tous les types sont sélectionnés

@@ -20,6 +20,7 @@ import {
   ScanHeart,
   MessagesSquare,
   MapPinHouse,
+  SquareActivity,
 } from "lucide-react";
 import Information from "./ProfileComponents/Information";
 import Formation from "./ProfileComponents/Formation";
@@ -28,12 +29,14 @@ import { Button } from "@/components/ui/Button";
 import Cabinets from "./ProfileComponents/Cabinets";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import PracticePanel from "./ProfileComponents/PracticePanel";
 
 const TABS = [
   { id: "informations", label: "Informations" },
   { id: "formations", label: "Formations et expériences" },
   { id: "troubles", label: "Mes Thérapies" },
-  { id: "cabinets", label: "Cabinets" }
+  { id: "cabinets", label: "Cabinets" },
+  { id: "pratique", label: "Mes pratiques" }
 ];
 import { TailSpin } from "react-loader-spinner";
 import { API_URL } from "@/services/api";
@@ -43,6 +46,7 @@ const tabIcons = {
   troubles: <ScanHeart className="w-6 h-6" />,
   cabinets: <MapPinHouse className="w-6 h-6" />,
   avis: <MessagesSquare className="w-6 h-6" />,
+  pratique: <SquareActivity className="w-6 h-6" />
 };
 
 const PraticienProfil = () => {
@@ -318,6 +322,9 @@ const PraticienProfil = () => {
         )}
         {activeTab === "cabinets" && (
           <Cabinets practitionerData={practitionerData} />
+        )}
+         {activeTab === "pratique" && (
+          <PracticePanel practitionerData={practitionerData} />
         )}
       </div>
 

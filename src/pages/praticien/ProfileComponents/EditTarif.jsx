@@ -6,7 +6,8 @@ export default function EditTarif({
   mode,          // 'add' or 'edit'
   existing,      // existing tarif object for 'edit', or undefined
   onClose,       // close form callback
-  onSave,        // save callback
+  onSave,
+  onCancel        // save callback
 }) {
   const isEdit = mode === 'edit';
 
@@ -179,7 +180,7 @@ export default function EditTarif({
         <Button type="submit" className="text-xs w-full sm:w-auto">
           <Save /> {isEdit ? 'Mettre à jour' : 'Enregistrer'}
         </Button>
-        <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
+        <Button variant="outline" onClick={onCancel} className="w-full sm:w-auto">
           Annuler
         </Button>
       </div>
