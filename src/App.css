@@ -156,3 +156,27 @@ input[type="number"] {
 body, * {
   font-family: 'Poppins' !important;
 }
+
+@keyframes orbit-adjusted {
+  0% {
+    transform: rotate(0deg) translateY(35px) rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg) translateY(35px) rotate(360deg);
+  }
+}
+
+@keyframes counterorbit-adjusted {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+.animate-orbit-adjusted {
+  animation: orbit-adjusted 0.75s linear infinite;
+  transform-origin: center;
+}
+
+.animate-counterorbit-adjusted {
+  animation: counterorbit-adjusted 0.75s linear infinite;
+}

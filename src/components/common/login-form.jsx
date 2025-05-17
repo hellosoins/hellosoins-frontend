@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/Label'
 import { cn } from '@/lib/utils'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Eye, EyeOff } from 'lucide-react'
+import { Loader } from '@/components/ui/Loader';
 import {
   Dialog,
   DialogContent,
@@ -78,6 +79,12 @@ export const LoginForm = ({ className, ...props }) => {
 
   return (
     <>
+      {loading && (
+        <div className="flex justify-center items-center mt-4">
+          <Loader />
+        </div>
+      )}
+
 
             <div className={cn('flex flex-col gap-6', className)} {...props}>
         <div  className="p-6 md:p-8 relative">
