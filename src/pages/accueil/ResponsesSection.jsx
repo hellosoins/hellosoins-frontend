@@ -47,10 +47,10 @@ export default function ResponsesSection() {
      
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-         <h2 className="text-3xl font-bold mb-12">
-        Des réponses{" "}
+        <h2 className="text-3xl font-bold mb-12">
+            Des réponses{" "}
         <span className="text-[#2b7a72]">
-          à tous vos besoins
+            à tous vos besoins 
         </span>
       </h2>
         {cards.map(({ title, subtitle, img }) => (
@@ -62,7 +62,7 @@ export default function ResponsesSection() {
               <h3 className="text-sm font-semibold mb-2">{title}</h3>
               <p className="text-gray-600 mb-4 text-xs">{subtitle}</p>
               <Button className="px-4 py-2 bg-white text-xs rounded border-2 font-bold shadow-none  border-[#3a8db1] text-[#3a8db1]  hover:text-white transition">
-                En savoir plus
+                En savoir plus 
               </Button>
             </div>
              <div
@@ -75,7 +75,7 @@ export default function ResponsesSection() {
         {/* Carte "Découvrir plus" */}
         <div className="flex items-center justify-center">
           <Button className="px-6 font-bold py-4 text-lg rounded border-none bg-transparent shadow-none border-gray-300 text-[#1d3f5a] hover:border-[#2b7a72] hover:text-[#2b7a72] transition">
-            Découvrir plus de réponses à vos besoins
+            Découvrir plus de réponses à vos besoins 
           </Button>
         </div>
       </div>
