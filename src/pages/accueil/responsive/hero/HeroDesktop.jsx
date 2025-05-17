@@ -31,7 +31,7 @@ const HeroDesktop = () => {
           <div className="flex items-center flex-1 h-full">
             <select
               className="w-full h-full bg-transparent outline-none
-                         text-[1vw] font-medium pl-[1vw]"
+                         text-[1vw] font-medium pl-[1vw] text-gray-500"
             >
               <option>Spécialité</option>
               <option>Ostéopathie</option>
